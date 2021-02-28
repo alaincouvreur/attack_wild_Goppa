@@ -1,5 +1,6 @@
 # attack_wild_Goppa
 Author : Alain Couvreur
+
 Contact : alain.couvreur@inria.fr
 
 ------------------------------
