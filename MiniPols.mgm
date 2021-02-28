@@ -1,0 +1,47 @@
+//*******************************************************************
+// This file contains the function MiniPols
+//*******************************************************************
+
+
+
+//=======================================================================
+// This program is designed to compute the minimal polynomials
+// of the elements of the support of the code.
+//=======================================================================
+
+
+//=======================================================================
+// INPUT : the two vectors candidates for the norms
+// 		   of the x_i's and the norms of the (x_i-1)'s.
+//		   The vectors are denoted as V1, V2.
+//-----------------------------------------------------------------------
+// OUTPUTS : the minimal polynomials at each positions
+//
+//-----------------------------------------------------------------------
+// CAUTION : The two first positions are supposed to be 0 and 1.
+//=======================================================================
+
+function MiniPols(V1, V2);
+		 v1:=ElementToSequence(V1);
+		 v2:=ElementToSequence(V2);
+		 Exclude(~v1, v1[1]);
+		 Exclude(~v2, v2[1]);
+
+		 // One needs to invert the elements since the previous programs
+		 // give 1/x_i^(q) and 1/(x_i-1)^q.
+
+		 v1:=[1/a : a in v1];
+		 v2:=[1/a : a in v2];
+
+		 n:=#v1;
+
+		 // Compute the trace from the norms.
+
+		 v3:=[v1[i] - v2[i] +1 : i in {1..n}];
+
+		 F:=Universe(v1);
+		 FF<w>:=ext<F|2>;
+		 R<x>:=PolynomialRing(F);
+
+		 return [x,x-1] cat [x^2 - v3[i]*x +v1[i] : i in {1..n}];		 		
+end function;

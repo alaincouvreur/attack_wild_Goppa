@@ -1,0 +1,253 @@
+//*******************************************************************
+// This file contains the functions : Shoot
+//                                    AsymShoot
+//                                    DeterminShoot
+//                                    DeterminAsymShoot
+//                                    DistTest
+//                                    AsymDistTest
+//*******************************************************************
+
+
+
+
+// This program computes the minimal and the maximal size
+// of the shooting window in which the shortened code is
+// distinguishable.
+
+load "CodeProd.mgm";
+load "CodeSquare.mgm";
+
+function Shoot(C);
+	 k:=Dimension(C);
+	 L:=[];
+	 short:=k-1;	 
+
+	 C0:=ShortenCode(C, {1..short});
+	 n0:=Length(C0);
+	 k0:=Dimension(C0);
+	 sym:=k0*(k0+1)/2;
+	 dim:=Dimension(CodeSquare(C0));		
+
+	 while  dim lt n0  do
+	 	  C0:=ShortenCode(C, {1..short});
+		  n0:=Length(C0);
+		  k0:=Dimension(C0);
+		  sym:=k0*(k0+1)/2;
+		  dim:=Dimension(CodeSquare(C0));		
+		  
+		  if dim lt Min(sym,n0) then
+		     Append(~L, short);	
+		  end if;
+		  short-:=1;	
+//		  print "truc";
+//		  print L;  
+	 end while;
+	 return L;
+end function;
+
+
+// Same function but for a pair of codes C, D
+
+
+function AsymShoot(C, D)
+
+	 k:=Min(Dimension(C), Dimension(D));
+	 L:=[];
+	 short:=k-1;	 
+
+	 D0:=ShortenCode(D, {1..short});
+	 C0:=ShortenCode(C, {1..short});
+	 I0:=C0 meet D0;
+	 n0:=Length(D0);
+	 d0:=Dimension(D0);
+	 c0:=Dimension(C0);
+	 i0:=Dimension(I0);
+	 asym:= i0*(i0+1)/2 + (c0-i0)*(d0-i0) + i0*(c0+d0-2*i0);
+	 dim:=Dimension(CodeProd(D0, C0));		
+
+	 while  dim lt n0  do
+
+
+	 	 D0:=ShortenCode(D, {1..short});
+	 	 C0:=ShortenCode(C, {1..short});
+	 	 I0:=C0 meet D0;
+	 	 n0:=Length(D0);
+	 	 d0:=Dimension(D0);
+	 	 c0:=Dimension(C0);
+	 	 i0:=Dimension(I0);
+	 	 asym:= i0*(i0+1)/2 + (c0-i0)*(d0-i0);
+	 	 dim:=Dimension(CodeProd(D0, C0));		
+
+		  if dim lt Min(asym,n0) then
+		     Append(~L, short);	
+		  end if;
+		  short-:=1;	  
+	 end while;
+	 return L;
+end function;
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+//=============================================================================
+//
+// Une fonction qui calcule une courte fenêtre du distingueur.
+//
+// INPUTS : Le code C
+//          un point de départ potentiel pour la fenetre du distingueur
+//
+//=============================================================================
+
+function DeterminShoot(C, a)
+	 n:=Length(C);
+	 F:=BaseRing(C);
+	 q:=#F;
+	 
+	 L:=[];
+	 while #L lt 5 do
+	       	  C0:=ShortenCode(C, {1..a});
+		  n0:=Length(C0);
+		  k0:=Dimension(C0);
+		  sym:=k0*(k0+1)/2;
+		  dim:=Dimension(CodeSquare(C0));		
+
+		  if dim lt Min(sym,n0) then
+		     Append(~L, a);	
+		  end if;
+		  a+:=1;	
+	 end while;
+	 return L,a;
+end function;
+
+//=============================================================================
+//
+// Puis la version asymétrique.
+//
+//=============================================================================
+
+function DeterminAsymShoot(C, D, a)
+	 n:=Length(C);
+	 assert n eq Length(D);
+	 F:=BaseRing(C);
+	 q:=#F;
+	 
+	 L:=[];
+	 while #L lt 5 do
+	 	 D0:=ShortenCode(D, {1..a});
+	 	 C0:=ShortenCode(C, {1..a});
+	 	 I0:=C0 meet D0;
+	 	 n0:=Length(D0);
+	 	 d0:=Dimension(D0);
+	 	 c0:=Dimension(C0);
+	 	 i0:=Dimension(I0);
+	 	 asym:= i0*(i0+1)/2 + (c0-i0)*(d0-i0);
+	 	 dim:=Dimension(CodeProd(D0, C0));		
+
+		  if dim lt Min(asym,n0) then
+		     Append(~L, a);	
+		  end if;
+		  a+:=1;	  
+
+	 end while;
+	 return L,a;
+end function;
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//============================================================================
+//
+// This function checks whether a code
+// shortened at l positions is distinguishable
+//----------------------------------------------------------------------------
+// INPUTS : A code C
+//          an integer l
+// OUTPUTS: a boolean
+//============================================================================
+
+function DistTest(C, l)
+	 
+	 assert Dimension(C) gt l;
+	 C0:=ShortenCode(C, {1..l});
+	 k:=Dimension(C0);
+	 n:=Length(C0);
+	 CC0:=CodeSquare(C0);
+	 	 
+	 return (Dimension(CC0) lt n) and (Dimension(CC0) lt k*(k+1)/2);
+
+end function;
+
+
+//=============================================================================
+//
+// Puis la version asymétrique.
+//
+//=============================================================================
+
+function AsymDistTest(C,D, l)
+	 assert Length(C) eq Length(D);
+	 assert Dimension(C) gt l;
+	 assert Dimension(D) gt l;
+	 C0:=ShortenCode(C, {1..l});
+	 D0:=ShortenCode(D, {1..l});
+	 kc:=Dimension(C0);
+	 kd:=Dimension(D0);
+	 ke:=Dimension(C0 meet D0);
+	 n:=Length(C0);
+	 CD0:=CodeProd(C0, D0);
+	 	 
+	 return (Dimension(CD0) lt n) and (Dimension(CD0)
+	 	lt kc*kd-ke*(ke-1)/2);
+end function;
+
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//=============================================================================
+// Une fonction qui calcule une petite fenêtre
+//=============================================================================
+
+function MiniWindow(C);
+	 k:=Dimension(C);
+	 L:=[];
+	 short:=k-1;
+	 while (#L lt 5) and (short gt -1) do
+	       C0:=ShortenCode(C,{1..short});
+	       n0:=Length(C0);
+	       k0:=Dimension(C0);
+	       if Dimension(CodeSquare(C0)) lt Min(n0, k0*(k0+1)/2)
+	       	  then Append(~L,short);
+	       end if;
+	       short-:=1;
+	 end while;
+	 return L;
+end function;
+
+//==============================================================================
+// Et la version asymetrique
+//==============================================================================
+
+function AsymMiniWindow(C,D);
+	 assert Length(C) eq Length(D);
+	 k:=Min(Dimension(C), Dimension(D));
+	 L:=[];
+	 short:=k-1;
+	 while (#L lt 5) and (short gt -1) do
+	       C0:=ShortenCode(C,{1..short});
+	       D0:=ShortenCode(D,{1..short});
+	       n0:=Length(C0);
+	       kc0:=Dimension(C0);
+	       kd0:=Dimension(D0);
+	       ke0:=Dimension(C0 meet D0);
+	       if Dimension(CodeProd(C0, D0)) lt Min(n0, kc0*kd0 - ke0*(ke0-1)/2)
+	       	  then Append(~L,short);
+	       end if;
+	       short-:=1;
+	 end while;
+	 return L;
+end function;
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

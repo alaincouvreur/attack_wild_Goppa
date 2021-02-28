@@ -1,0 +1,37 @@
+//*******************************************************************
+// This file contains the function CompXi
+//*******************************************************************
+
+
+
+//=======================================================
+// This function computes the norms of the x_i's.
+//========================================================
+
+
+//==========================================================
+// INPUTS: the codes C, C_{q+1}; the position a.
+// OUTPUTS: the list of the x_i^{q+1}.
+
+
+function CompXi(C, Cqp1,a)
+		 C0:=PunctureCode(C,a);
+		 Cq0:=PunctureCode(Cqp1, a);
+		 D:=CodeProd(Dual(C0), Cq0);
+		 DD:=Dual(D);
+		 
+		 L:=[];
+		 print Dimension(DD);
+		 if Dimension(DD) gt 7 then
+		 	print "espace de recherche trop large";
+		 	return 0;
+		 end if;
+
+		 for u in DD do
+		 	 U:=ElementToSequence(u);
+			 if ((0 in U) eq false) and (U[1] eq 1) and (U ne [BaseRing(C)| 1 : i in {1..Length(C0)}]) then
+			 	Append(~L, u);
+		     end if;
+		 end for;
+		 return(L);
+end function;

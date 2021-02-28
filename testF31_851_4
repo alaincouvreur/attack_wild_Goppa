@@ -1,0 +1,63 @@
+load "KeyGen.mgm";
+load "BreakKey.mgm";
+q:=31;
+r:=4;
+a:=q^2-851;
+
+C, L, g:=KeyGen(q,r,a,2);
+
+printf "Support L=%o", L;
+print "\n";
+
+printf "Polynome de Goppa g=%o", g;
+print "\n";
+
+n:=Length(C);
+printf "Code de Longueur %o.\n",n;
+printf "Code de Dimension %o.\n",Dimension(C);
+
+
+F:=GF(q);
+FF<w>:=ext<F|2>;
+
+
+GS:=GapSeq(F,FF, r, n, q+1);
+print GS;
+
+D1:=ExtShorten(C, {1});
+print "Calcul de D2.\n";
+D2:=ComputeCi(C, D1, D1, D1, 1, 1000);
+print "Calcul de D4.\n";
+D4:=ComputeCi(C, D2, D2, D2, 1, 1000);
+print "Calcul de D8.\n";
+D8:=ComputeCi(C, D4, D4, D4, 1, 1000);
+print "Calcul de D16.\n";
+D16:=ComputeCi(C, D8, D8, D8, 1, 1000);
+print "Calcul de D32.\n";
+D32:=ComputeCi(C, D16, D16, D16, 1, 1000);
+delete D1, D2, D4, D8, D16;
+
+
+E1:=ExtShorten(C, {2});
+print "Calcul de E2.\n";
+E2:=ComputeCi(C, E1, E1, E1, 2, 1000);
+print "Calcul de E4.\n";
+E4:=ComputeCi(C, E2, E2, E2, 2, 1000);
+print "Calcul de E8.\n";
+E8:=ComputeCi(C, E4, E4, E4, 2, 1000);
+print "Calcul de E16.\n";
+E16:=ComputeCi(C, E8, E8, E8, 2, 1000);
+print "Calcul de E32.\n";
+E32:=ComputeCi(C, E16, E16, E16, 2, 1000);
+delete E1, E2, E4, E8, E16;
+
+C0:=D32;
+C1:=E32;
+
+assert Dimension(C0) eq GS[q+1][2];
+assert Dimension(C1) eq GS[q+1][2];
+
+print "Etape de calcul des C(q+1) r\'eussie.\n";
+
+T:=BreakKeyManual(C, C0, C1, r);
+print T;

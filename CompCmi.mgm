@@ -1,0 +1,140 @@
+//-------------------------------------------------------------
+// This function computes the whole C_{-i} of a code
+//=============================================================
+// INPUTS: - the code: C;
+//         - the codes Ci, Cu, Cv
+// 	       such that we output a code W containing C
+//	       and such that W* Ci subset Cu*Cv.
+//	   - The index position a (at which we puncture).    
+//         - a maximal number of loops: stop
+//
+//-------------------------------------------------------------
+// OUTPUTS: C_{-i}
+//
+//=============================================================
+
+load "UnShorten.mgm";
+load "Vmin1.mgm";
+load "shooting_window.mgm";
+
+
+function ComputeCmi(C, Ci, Cu, Cv, a, stop)
+
+
+	 // First, we puncture.
+	 pC:=PunctureCode(C, {a});
+	 pCi:=PunctureCode(Ci, {a});
+	 pCu:=PunctureCode(Cu, {a});
+	 pCv:=PunctureCode(Cv, {a});
+
+	 n:=Length(pC);
+	 U:={1..n};
+
+
+	 //	 First compute a suitable shooting window
+	 win:=AsymShoot(pCu, pCv);
+	 //	 print win;
+
+	 Cmi:=LinearCode(AmbientSpace(pC));
+
+	 if win eq [] then
+	    print "Pas de fenetre de
+	    	  raccourcissement pour ces codes";
+            return Cmi;
+	 end if;
+
+	 index:=(#win) div 2 +1;
+	 short:=win[index];
+	 
+	 //	 print short;
+
+	 delete win;
+	 delete index;
+
+	 
+	 j:=0;
+	 test:=[n+1, n+2, n+3, n+4, n+5];
+	 t:=5;
+
+	 while test[t] ne test[t-4] do
+
+	       S:=RandomSubset(U, short);
+	       pCs:=ShortenCode(pC, S);
+	       pCis:=ShortenCode(pCi, S);
+	       pCus:=ShortenCode(pCu, S);
+	       pCvs:=ShortenCode(pCv, S);
+
+	       Cmis:=ExtractVmin(pCs, pCis, CodeProd(pCus, pCvs));
+	       Cmi meet:=pC+UnShorten(Cmis, S) ;
+
+	       j+:=1;
+	       t+:=1;
+	       Append(~test, Dimension(Cmi));
+	 end while;	 
+
+	 printf "Trouvé en %o iterations.\n", j;
+
+	 return Cmi;
+
+end function;
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+function ComputeCmiNoPuncture(C, Ci, Cu, Cv, stop)
+
+
+
+	 n:=Length(C);
+	 U:={1..n};
+
+
+	 //	 First compute a suitable shooting window
+	 win:=AsymShoot(Cu, Cv);
+	 //	 print win;
+
+	 Cmi:=LinearCode(AmbientSpace(C));
+
+	 if win eq [] then
+	    print "Pas de fenetre de
+	    	  raccourcissement pour ces codes";
+            return Cmi;
+	 end if;
+
+	 index:=(#win) div 2 +1;
+	 short:=win[index];
+	 
+	 //	 print short;
+
+	 delete win;
+	 delete index;
+
+	 
+	 j:=0;
+	 test:=[n+1, n+2, n+3, n+4, n+5];
+	 t:=5;
+
+	 while test[t] ne test[t-4] do
+
+	       S:=RandomSubset(U, short);
+	       Cs:=ShortenCode(C, S);
+	       Cis:=ShortenCode(Ci, S);
+	       Cus:=ShortenCode(Cu, S);
+	       Cvs:=ShortenCode(Cv, S);
+
+	       Cmis:=ExtractVmin(Cs, Cis, CodeProd(Cus, Cvs));
+	       Cmi meet:=C+UnShorten(Cmis, S) ;
+
+	       j+:=1;
+	       t+:=1;
+	       Append(~test, Dimension(Cmi));
+	 end while;	 
+
+	 printf "Trouvé en %o iterations.\n", j;
+
+	 return Cmi;
+
+end function;
+

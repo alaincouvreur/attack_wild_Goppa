@@ -1,0 +1,40 @@
+//*******************************************************************
+// This file contains the function EquivMatrice
+//*******************************************************************
+
+//===================================================================
+// This function constructs the matrix providing the code
+// equivalence
+//-------------------------------------------------------------------
+// INPUTS : - A sequence U of length fi + 2(n-fi-2*fj)+2*fj
+//          - the sizes fi , fj related to
+//            the diagonal block of the morphisms
+//===================================================================
+
+
+function EquivMatrice(U,fi,fj)
+		  u:=#U;
+		  F:=Universe(U);
+		  assert IsDivisibleBy(u-fi-2*fj,4);
+		  l:=(u-fi-2*fj) div 4;
+		  n0:=fi+((u-fi-2*fj) div 2) +2*fj;
+
+		  M:=ZeroMatrix(F,n0,n0);
+		  for j:=1 to fi do
+		  	  M[j,j]:=U[j];
+		  end for;
+
+		  for j:=1 to l do
+		  	  M[fi-1+2*j, fi-1+2*j] := U[fi-3+4*j];
+			  M[fi+2*j, fi-1+2*j] := U[fi-1+4*j];
+			  M[fi-1+2*j, fi+2*j] := U[fi-2+4*j];
+			  M[fi+2*j, fi+2*j] := U[fi+4*j];
+		  end for;
+
+		  for j:=1 to fj do
+		  	  M[n0-2*fj-1+2*j, n0-2*fj-1+2*j]:= U[u-2*fj-1+2*j];
+		  	  M[n0-2*fj-1+2*j, n0-2*fj+2*j]:=U[u-2*fj+2*j];
+		  end for;
+
+		  return M;
+end function;

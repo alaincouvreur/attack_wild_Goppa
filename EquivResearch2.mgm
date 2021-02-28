@@ -1,0 +1,31 @@
+//*******************************************************************
+// This file contains the function EquivStep2
+//*******************************************************************
+
+//===================================================================
+// This function is the Second part of the reasearch of code 
+// equivalence.
+//-------------------------------------------------------------------
+// INPUTS : - The basis T of morphisms (sending the code C into
+//            the code D) satisfying some sparseness contraints.
+//          - the size fi of the diagonal block of the morphisms
+//===================================================================
+
+
+function EquivStep2(T,fi)
+		 
+		 L:=[];
+		 n:=#ElementToSequence(Random(T));
+		 for a in T do
+		   u:=ElementToSequence(a);
+		   if u[1] eq 1 and &and[u[i] ne 0 : i in {2..fi}]
+		   	  	   and &and[(u[j] ne 0 and u[j+3] ne 0 and u[j+1] eq 0 and u[j+2] eq 0)
+                            or (u[j+1] ne 0 and u[j+2] ne 0 and u[j] eq 0 and u[j+3] eq 0)
+                            : j in {fi+1..n-3 by 4}] then
+				Append(~L, u);
+
+		   end if;
+		 end for;
+
+		 return(L);
+end function;

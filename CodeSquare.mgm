@@ -1,0 +1,56 @@
+//*******************************************************************
+// This file contains the functions: MatSquare
+//                                   CodeSquare
+//*******************************************************************
+
+
+
+
+//=========================================================================//
+// Given a generator matrix M of a code Cm                                 //
+// Thus program returns a generator matrix of the code Cm*Cm.              //
+//=========================================================================//
+
+function MatSquare(M);
+	 F:=BaseRing(M);
+
+	 n:=NumberOfColumns(M);
+
+	 RM:=RowSequence(M);
+	 
+	 L:=[];
+	 k:=#RM;
+
+	 for i in {1..k} do
+	     for j in {i..k} do
+	     	 Append(~L, [RM[i][l]*RM[j][l]: l in {1..n}]);	 
+	     end for;	 
+	 end for;
+
+	 V:=VectorSpace(F,n);
+	 Prod:=sub<V | L>;
+
+	 return BasisMatrix(Prod);
+end function;
+
+
+
+//=========================================================================
+
+
+
+
+//=========================================================================
+// Same function but with codes as input and output	 
+//=========================================================================
+
+
+function CodeSquare(C);
+	 MC:=GeneratorMatrix(C);
+	 S:=MatSquare(MC);
+	 return LinearCode(S);
+end function;
+
+
+
+//=========================================================================

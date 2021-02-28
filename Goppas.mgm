@@ -1,0 +1,342 @@
+//*******************************************************************
+// This file contains the functions : Goppa
+//                                    Vith
+//                                    Vminth
+//                                    MultiVith
+//                                    MultiVminth
+//                                    MinimalSet
+//*******************************************************************
+
+
+
+///////////////////////////////////////////////////////////////////
+// In  this file you'll find programs for computing              //
+// classical Goppa codes, theoreticals C2, C_i, C_{-1}, C_{-i}.  //
+// Each program returns an alternant code together with the GRS  //
+// code above.                                                   //
+///////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+//==========================================================
+// This program generates a classical Goppa Code.
+//----------------------------------------------------------
+// CAUTION: Magma computes Goppa code only on the prime
+// ground field. For instance if you define a Goppa 
+// poynomial over F_{64} to get a code over F_8. 
+// Then the primitive "GoppaCode" of Magma will compute
+// a binary Goppa code. This function is useful when
+// dealing with intermediary extensions. 
+//==========================================================
+
+//==========================================================
+// INPUTS: - The support L (distinct elements of F_q^l);
+//         - The Goppa Polynomial
+//         - The subfield F on which is defined the code.
+//----------------------------------------------------------
+// OUTPUTS: - The code Gamma (L, G);
+//          - The GRS code above Gamma;
+//==========================================================
+
+
+function Goppa(L, g, F)
+	 // assert that Zeroes(g) avoids L.
+	 assert &*[Evaluate(g, a): a in L] ne 0;
+	 
+
+	 R<x>:=Parent(g);
+	 Pi:=Derivative(&*[x-a: a in L]);	 
+
+
+	 // Construction of the multiplicator vector W (the weight)
+	 // of the corresponding GRS code.
+
+	 W:=[Evaluate(g, a)/Evaluate(Pi, a) : a in L];
+
+	 n:=#L;
+	 k:=n - Degree(g);
+	 V:=[x^u: u in {0..k-1}];
+
+
+	 // we can generate a generator matrix of the GRS code.
+
+	 M:=Matrix(k, n, [[W[a]*Evaluate(V[j], L[a]) : a in {1..n}] :
+	 	      j in {1..k}]);
+
+
+         
+         C0:=LinearCode(M);
+		               
+	 return SubfieldSubcode(C0,F), C0;
+end function;    
+
+
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+//=======================================================================
+// This program Computes the actual space V_i.
+// Its name Vith stands for "Theoretical V_i".
+//=======================================================================
+
+//========================================================
+// INPUTS: The support L,
+//         the Goppa Polynomial g
+//         the position a at which V_i(a) is computed
+//         the vanishing multiplicity at position a:  i
+//	   the base field F.
+//--------------------------------------------------------
+// OUTPUTS: - The code V_i.
+//          - The GRS code above V_i.
+//========================================================
+
+
+function Vith(L, g, a, i, F);
+
+	 // assert that Zeroes(g) avoids L.
+	 assert &*[Evaluate(g, t): t in L] ne 0;
+	 
+	 R<x>:=Parent(g);
+	 Pi:=Derivative(&*[x-t: t in L]);	 
+	 n:=#L;
+
+	 // Construction of the multiplicator vector (the weight)
+	 // of the corresponding GRS code.
+
+	 W:=[Evaluate(g, t)/Evaluate(Pi, t) : t in L];
+
+	 k:=n - Degree(g);
+	 V:=[(x-a)^u: u in {i..k-1}];
+	 K:=#V;
+
+	 // we can generate a generator matrix of the GRS code.
+
+	 M:=Matrix(K, n, [[W[t]*Evaluate(V[j], L[t]) : t in {1..n}] :
+	 	      j in {1..K}]);
+         
+         C0:=LinearCode(M);
+		               
+	 return SubfieldSubcode(C0,F), C0;
+end function;
+
+
+
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+//========================================================
+// This program Computes the actual space V_{-i}.
+//========================================================
+
+//========================================================
+// INPUTS: The support L;
+//         the Goppa Polynomial g;
+//         the position a at which V_{-i}(a) is computed;
+//         the multiplicity i>0;
+//	   the base field F.
+//--------------------------------------------------------
+// OUTPUT: The code V_{-i}.
+//         The GRS above.
+//========================================================
+
+//--------------------------------------------------------
+// CAUTION I : Here the position a cannot be in L
+//--------------------------------------------------------
+
+//--------------------------------------------------------
+// CAUTION II : Input (L, g, a, 3, F) to compute V_{-3}
+//--------------------------------------------------------
+
+
+function Vminth(L, g, a, i , F);
+	 // assert that Zeroes(g) avoids L and a not in L.
+	 assert &*[Evaluate(g, t): t in L] ne 0;
+	 assert (a in L) eq false;	 
+	 assert i gt 0;
+
+	 R<x>:=Parent(g);
+	 RF<x>:=FieldOfFractions(R);
+	 Pi:=Derivative(&*[x-t: t in L]);	 
+	 n:=#L;
+
+	 // Construction of the multiplicator vector (the weight)
+	 // of the corresponding GRS code.
+
+	 W:=[(Evaluate(g, t)/Evaluate(Pi, t)) : t in L];
+
+	 k:=n - Degree(g);
+	 V:=[(x-a)^u: u in {-i..k-1}];
+	 K:=#V;
+
+
+	 // we can generate a generator matrix of the GRS code.
+	 M:=Matrix(K, n, [[W[t]*Evaluate(V[j], L[t]) : t in {1..n}] :
+	 	      j in {1..K}]);
+         
+         C0:=LinearCode(M);
+		               
+	 return SubfieldSubcode(C0,F), C0;
+end function;
+
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+//=======================================================================
+// This program Computes the actual space V_{i,j} at a pair of positions.
+// Its name Vith stands for "Theoretical V_i".
+//=======================================================================
+
+//========================================================
+// INPUTS: The support L,
+//         the Goppa Polynomial g
+//         the positions A at which V_{i,j}(a, b) is computed
+//         the vanishing multiplicities at positions A:  I
+//	   the base field F.
+//--------------------------------------------------------
+// OUTPUTS: - The code V_{i,j}.
+//          - The GRS code above V_{i,j}.
+//========================================================
+
+
+function MultiVith(L, g, A, I, F);
+
+	 // assert that Zeroes(g) avoids L.
+	 assert &*[Evaluate(g, t): t in L] ne 0;
+	 assert #I eq #A;	 
+
+	 R<x>:=Parent(g);
+	 Pi:=Derivative(&*[x-t: t in L]);	 
+	 n:=#L;
+
+	 // Construction of the multiplicator vector (the weight)
+	 // of the corresponding GRS code.
+
+	 W:=[Evaluate(g, t)/Evaluate(Pi, t) : t in L];
+
+	 k:=n - Degree(g);
+	 S:=&*[(x-A[i])^I[i]: i in {1..#A}];
+	 V:=[S*x^u: u in {0..k-1-(&+I)}];
+	 K:=#V;
+
+	 // we can generate a generator matrix of the GRS code.
+
+	 M:=Matrix(K, n, [[W[t]*Evaluate(V[j], L[t]) : t in {1..n}] :
+	 	      j in {1..K}]);
+         
+         C0:=LinearCode(M);
+		               
+	 return SubfieldSubcode(C0,F), C0;
+end function;
+
+
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+//========================================================
+// This program Computes the actual space V_{-i, -j}.
+//========================================================
+
+//========================================================
+// INPUTS: The support L;
+//         the Goppa Polynomial g;
+//         the positions A:=[a_1, ..., a_r] at which V_{-i_1,.., -i_r}
+//	    is computed;
+//         the multiplicities I = [ i_j]_j ; i_j>0;
+//	   the base field F.
+//--------------------------------------------------------
+// OUTPUT: The code V_{-i_1,..., -j_r}.
+//         The GRS above.
+//========================================================
+
+//--------------------------------------------------------
+// CAUTION I : Here the positions a_i cannot be in L
+//--------------------------------------------------------
+
+
+
+function MultiVminth(L, g, A, I , F);
+	 // assert that Zeroes(g) avoids L and a not in L.
+	 assert &*[Evaluate(g, t): t in L] ne 0;
+	 assert # A eq #I;
+	 for i:=1 to #A do
+	 	 assert (A[i] in L) eq false;	 
+		 assert I[i] gt 0;
+         end for;
+
+
+
+	 R<x>:=Parent(g);
+	 RF<x>:=FieldOfFractions(R);
+	 Pi:=Derivative(&*[x-t: t in L]);	 
+	 n:=#L;
+
+	 // Construction of the multiplicator vector (the weight)
+	 // of the corresponding GRS code.
+
+	 W:=[(Evaluate(g, t)/Evaluate(Pi, t)) : t in L];
+
+	 k:=n - Degree(g);
+	 S:= &*[(x-A[i])^I[i]: i in {1..#A}];
+	 V:=[(x^u)/S: u in {0..k-1+(&+I)}];
+	 K:=#V;
+
+
+	 // we can generate a generator matrix of the GRS code.
+	 M:=Matrix(K, n, [[W[t]*Evaluate(V[j], L[t]) : t in {1..n}] :
+	 	      j in {1..K}]);
+         
+         C0:=LinearCode(M);
+		               
+	 return SubfieldSubcode(C0,F), C0;
+end function;
+
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//===========================================================================
+// This function computes the minimal size of a subset of the 
+// code support such that C_{-1,...-1} \neq C.
+//===========================================================================
+//
+// INPUTS: The parameters of the Goppa code: L, g, F;
+// OUTPUTS : The size of the support
+//
+//===========================================================================
+
+function MinimalSet(L, g, F)
+	 C:=Goppa(L, g, F);
+	 CC:=C;
+	 i:=0;
+	 A:=[];
+	 I:=[Integers()| ];	 
+
+
+	 while CC eq C do
+	       Append(~A, L[1]);
+	       Append(~I, 1);
+       	       Exclude(~L, L[1]);
+	       CC:=MultiVminth(L, g, A, I, F);
+	       C:=PunctureCode(C, {1});
+	       i+:=1;
+	 end while;
+	 return i;
+end function;

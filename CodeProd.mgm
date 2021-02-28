@@ -1,0 +1,52 @@
+//*******************************************************************
+// This file contains the functions: MatProd
+//                                   CodeProd
+//*******************************************************************
+
+
+
+//===============================================================
+// Given two generator matrices M and N of two codes Cm and Cn
+// Thus program returns a generator matrix of the code Cm*Cn.
+//===============================================================
+
+function MatProd(M, N);
+	 F:=BaseRing(M);
+	 assert BaseRing(N) eq F;
+
+	 n:=NumberOfColumns(M);
+	 assert n eq NumberOfColumns(N);
+
+	 RM:=RowSequence(M);
+	 RN:=RowSequence(N);
+	 
+	 L:=[];
+
+	 for C in RM do
+	     for D in RN do
+	     	 Append(~L, [C[i]*D[i]: i in {1..n}]);	 
+	     end for;	 
+	 end for;
+
+	 V:=VectorSpace(F,n);
+	 Prod:=sub<V | L>;
+
+	 return BasisMatrix(Prod);
+end function;
+
+
+
+//===========================================================================
+
+//===========================================================================
+// Same program but with a code as input and output
+//===========================================================================
+
+function CodeProd(C,D);
+	 MC:=GeneratorMatrix(C);
+	 MD:=GeneratorMatrix(D);
+	 P:=MatProd(MC,MD);
+	 return LinearCode(P);
+end function;
+
+//=======================================================================

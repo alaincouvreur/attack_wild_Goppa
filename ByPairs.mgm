@@ -1,0 +1,49 @@
+//*******************************************************************
+// This file contains the function ByPairs
+//*******************************************************************
+
+
+
+//===================================================================
+// This function tries to connect by pairs our lists of "norms"...
+//===================================================================
+// INPUTS :  -  two sequences of sequences of norms S1 and S2.
+//           -  an integer 1=< i =< #S1
+//-------------------------------------------------------------------
+// OUTPUTS:  -  the element of T corresponding to u.
+//===================================================================
+
+
+function ByPairs(S1,S2, i)
+		 assert #S1 eq #S2;
+		 T1 := [ElementToSequence(s) : s in S1];
+		 T2 := [ElementToSequence(s) : s in S2];		
+
+		 // One needs to remove the first entry of
+		 // the sequence, since they have been normalised so that
+		 // this first entry is 1.
+
+		 T1 :=[Exclude(l, l[1]) : l in T1];
+		 T2 :=[Exclude(l, l[1]) : l in T2];
+
+
+		 u:=T1[i];
+		 n:=#u;
+		 F:=Universe(u);
+		 P:=ProjectiveSpace(F, n-1);
+
+		 
+		 R1:={P![u[j] * s[j] : j in {1..n}] : s in T2};
+
+		 for j:=1 to #T2 do
+//		 	 printf "Test %o dans ByPairs.\n",j;
+		 	 s:=T2[j];
+		 	 R2 := {P![s[j] * t[j] : j in {1..n}] : t in T1};
+		 	 if R1 eq R2 then
+			 	return S2[j];
+			 end if;
+		 end for;	
+		 
+		 	print "ERREUR, Programme ByPairs ne peut retourner un résultat";		
+			return 0;			
+end function;

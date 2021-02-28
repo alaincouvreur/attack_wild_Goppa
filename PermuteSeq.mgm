@@ -1,0 +1,22 @@
+//*******************************************************************
+// This file contains the function PermuteSeq
+//*******************************************************************
+
+//===================================================================
+// This Permutes the elements of a sequence L
+// using a permutation s.
+//-------------------------------------------------------------------
+// INPUTS : - The Sequence L;
+//          - the permutation s.
+//===================================================================
+
+
+function PermuteSeq(L,s)
+		 n:=#L;
+		 assert #GSet(Parent(s)) eq n;
+		 L0:=[Universe(L) | 0 : i in {1..n}];
+		 for j:=1 to n do
+		 	 L0[j]:=L[j^(s^(-1))];
+		 end for;
+		 return(L0);
+end function;

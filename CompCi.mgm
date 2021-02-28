@@ -1,0 +1,448 @@
+//*******************************************************************
+// This file contains the functions: CompCi
+//                                   ComputeCiGuess
+//                                   VarComputeCiGuess
+//                                   MultiCompCi
+//                                   ComputeCij
+//*******************************************************************
+
+
+
+
+//-------------------------------------------------------------
+// This function computes the whole C_i of a code
+//=============================================================
+// INPUTS: the code: C;
+//         the code Cim1:=C_{i-1}
+//         the index of the position: a
+//         the codes: Cu and Cv such that
+//                    C_i * C subset Cu * Cv.	   
+//         a maximal number of loops: stop
+//-------------------------------------------------------------
+// OUTPUTS: C_i
+//
+//=============================================================
+
+load "UnShorten.mgm";
+load "V2.mgm";
+load "shooting_window.mgm";
+
+function ComputeCi(C, Cim1, Cu, Cv, a , stop)
+	 assert Cim1 subset C;
+	 assert Dimension(Cim1) gt 1;
+
+	 n:=Length(C);
+	 U:={1..n};
+	 Exclude(~U, a);
+
+	 // First compute a suitable shooting window
+	 win:=AsymShoot(Cu, Cv);
+	 // print win;
+
+	 Ci:=LinearCode<BaseRing(C), n | 0>;
+	 
+
+	 if win eq [] then
+	    print "Pas de fenetre de raccourcissement pour ces codes";
+            return Ci;
+	 end if;
+
+	 index:=(#win) div 2 +1;
+	 short:=win[index];
+	 
+	 // print short;
+
+	 delete win;
+	 delete index;
+
+	 
+	 // The stopping test is when five consecutive 
+	 // Computations give the same code.
+
+	 test:=[n+1, n+2, n+3, n+4 , n+5];
+	 t:=5;
+	 j:=0;
+
+
+	 while (test[t] ne test[t-4]) do
+	       if j eq stop then
+	       	  print "Echec";
+		  return LinearCode<BaseRing(C), n | 0>;
+	       end if;
+
+	       S:=RandomSubset(U, short);
+	       Cs:=ShortenCode(C, S);
+	       Cim1s:=ShortenCode(Cim1, S);
+	       Cus:=ShortenCode(Cu, S);
+	       Cvs:=ShortenCode(Cv, S);
+
+	       Cis:=ExtractV(Cs, Cim1s, CodeProd(Cus, Cvs));
+	       Ci+:=UnShorten(Cis, S);
+	       // print Dimension(Cim1), Dimension(Ci);
+
+	       Append(~test, Dimension(Ci));
+	       t+:=1;
+	       j+:=1;
+	 end while;	 
+
+	 printf "Trouvé en %o iterations.\n", j-1;
+
+	 return Ci;
+
+end function;
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+//-------------------------------------------------------------
+// A variant
+//=============================================================
+// INPUTS: the code: C;
+//         the code Cim1:=C_{i-1}
+//         the index of the position: a
+//         the codes: Cu and Cv such that
+//                    C_i * C subset Cu * Cv.	   
+//         the guessed dimension of C_i : guess
+//         a maximal number of loops: stop
+//-------------------------------------------------------------
+// OUTPUTS: C_i
+//
+//=============================================================
+
+function ComputeCiGuess(C, Cim1, Cu, Cv, a , guess, stop)
+	 assert Cim1 subset C;
+	 assert Dimension(Cim1) gt 1;
+
+	 n:=Length(C);
+	 U:={1..n};
+	 Exclude(~U, a);
+
+	 // First compute a suitable shooting window
+	 win:=AsymShoot(Cu, Cv);
+	 // print win;
+
+	 Ci:=LinearCode<BaseRing(C), n | 0>;
+	 
+
+	 if win eq [] then
+	    print "Pas de fenetre de raccourcissement pour ces codes";
+            return Ci;
+	 end if;
+
+	 index:=(#win) div 2 +1;
+	 short:=win[index];
+	 
+	 // print short;
+
+	 delete win;
+	 delete index;
+	 j:=1;
+
+
+	 while Dimension(Ci) lt guess do
+	       if j eq stop then
+	       	  print "Echec";
+		  return Ci;
+	       end if;
+
+	       S:=RandomSubset(U, short);
+	       Cs:=ShortenCode(C, S);
+	       Cim1s:=ShortenCode(Cim1, S);
+	       Cus:=ShortenCode(Cu, S);
+	       Cvs:=ShortenCode(Cv, S);
+
+	       Cis:=ExtractV(Cs, Cim1s, CodeProd(Cus, Cvs));
+	       Ci+:=UnShorten(Cis, S);
+	       j+:=1;
+	 end while;	 
+
+	 printf "Trouvé en %o iterations.\n", j-1;
+
+	 return Ci;
+
+end function;
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//-------------------------------------------------------------
+// Another variant
+//=============================================================
+// INPUTS: the code: C;
+//         the code Cim1:=C_{i-1}
+//         the index of the position: a
+//         a guessed high value b for a distinguishable shortening
+//         a guessed low value bp for a distinguishable shortening
+//         the codes: Cu and Cv such that
+//                    C_i * C subset Cu * Cv.	   
+//         the guessed dimension of C_i : guess
+//         a maximal number of loops: stop
+//-------------------------------------------------------------
+// OUTPUTS: C_i
+//
+//=============================================================
+
+function VarComputeCiGuess(C, Cim1, Cu, Cv, a ,b ,bp , guess, stop)
+	 assert Cim1 subset C;
+	 assert Dimension(Cim1) gt 1;
+
+	 n:=Length(C);
+	 U:={1..n};
+	 Exclude(~U, a);
+
+	 Ci:=LinearCode<BaseRing(C), n | 0>;
+
+
+	 if AsymDistTest(Cu, Cv, b)
+	    then short:=b;
+	 else print "Calcul complet de la fenetre de distingueur. Cela peut \^etre long...";
+           	 win:=DeterminAsymShoot(Cu, Cv, bp);
+	 	 if win eq [] then
+	 	      print "Pas de fenetre de raccourcissement pour ces codes";
+		      return Ci;
+	         end if;
+
+	    index:=(#win) div 2 +1;
+	    short:=win[index];
+	 
+            delete win;
+	    delete index;
+	 end if;
+
+	 j:=1;
+
+
+	 while Dimension(Ci) lt guess do
+	       print Dimension(Ci);
+	       if j eq stop then
+	       	  print "Echec";
+		  return Ci;
+	       end if;
+
+	       S:=RandomSubset(U, short);
+	       Cs:=ShortenCode(C, S);
+	       Cim1s:=ShortenCode(Cim1, S);
+	       Cus:=ShortenCode(Cu, S);
+	       Cvs:=ShortenCode(Cv, S);
+
+	       Cis:=ExtractV(Cs, Cim1s, CodeProd(Cus, Cvs));
+	       Ci+:=UnShorten(Cis, S);
+	       j+:=1;
+	 end while;	 
+
+	 printf "Trouvé en %o iterations.\n", j-1;
+
+	 return Ci;
+
+end function;
+
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//-------------------------------------------------------------
+// Again another variant
+//=============================================================
+// INPUTS: the code: C;
+//         the code Cim1:=C_{i-1}
+//         the index of the position: a
+//         a prescribed value for the distinguisher b.
+//         the codes: Cu and Cv such that
+//                    C_i * C subset Cu * Cv.	   
+//         the guessed dimension of C_i : guess
+//         a maximal number of loops: stop
+//-------------------------------------------------------------
+// OUTPUTS: C_i
+//
+//=============================================================
+
+function PrescComputeCiGuess(C, Cim1, Cu, Cv, a ,b , guess, stop)
+	 assert Cim1 subset C;
+	 assert Dimension(Cim1) gt 1;
+
+	 n:=Length(C);
+	 U:={1..n};
+	 Exclude(~U, a);
+
+	 Ci:=LinearCode<BaseRing(C), n | 0>;
+
+
+	 j:=1;
+
+	 L:=[];
+	 while Dimension(Ci) lt guess do
+	       print Dimension(Ci);
+	       Append(~L, Dimension(Ci));
+	       if #L gt 5 and L[#L] eq L[#L-5]
+	       	  then return Ci;
+	       end if;
+	       if j eq stop then
+	       	  print "Echec";
+		  return Ci;
+	       end if;
+
+	       S:=RandomSubset(U, b);
+	       Cs:=ShortenCode(C, S);
+	       Cim1s:=ShortenCode(Cim1, S);
+	       Cus:=ShortenCode(Cu, S);
+	       Cvs:=ShortenCode(Cv, S);
+
+	       Cis:=ExtractV(Cs, Cim1s, CodeProd(Cus, Cvs));
+	       Ci+:=UnShorten(Cis, S);
+	       j+:=1;
+	 end while;	 
+
+	 printf "Trouvé en %o iterations.\n", j-1;
+
+	 return Ci;
+
+end function;
+
+
+
+
+
+//===========================================================
+// A function to compute several consecutive C_i's;
+//===========================================================
+// 
+// INPUTS : the code C, 
+//          the index of the shortening position a, 
+//          the integer i such that the 
+//          last computed code will be C_i.   
+//          the maximal number of loops fo each C_i
+//------------------------------------------------------------
+//
+// OUTPUTS: A sequence [* C1, L, Ci*]
+// 	    where C1 is C_1;
+//          L is a sequence with L[1] = the zero code
+//          L[i] is a list of codes such that
+//	    C_{i-1} meet Dual(Li) = Ci.
+//
+//          Ci is the last computed C_i.
+//
+// We chose such an output istead of the list of the Ci_s
+// in order to limit the size of the output and hence
+// to preserve the memory.
+//
+// One gets C_i by computing C_1 meet Dual(&+L[1..i])
+//============================================================
+
+
+function MultiCompCi (C, a, i, stop);
+	 C1:=ExtShorten(C, {a});
+	 
+	 printf "C1 est de dimension %o.\n", Dimension(C1);
+	 L:=[LinearCode<BaseRing(C), Length(C) | 0>];
+	 Ci:=C1;
+	 for j:=2 to i do
+	     Cip:=ComputeCi(C, Ci, C1, Ci, a, stop);		 
+
+
+	     if Cip eq LinearCode<BaseRing(C), Length(C) | 0> then
+		 	   print "Tentative de calcul plus fin.\n";
+		 	   if #L eq 1 then print "Pas de codes distinguables";
+			   	  return 0;
+			   end if;
+			   
+			   for s:=2 to Floor((#L+1)/2) do		 		
+			   			   Di:=C1 meet Dual(&+L[1..s]);
+						   Doi:=C1 meet Dual(&+L[1..(#L+1-s)]);
+						   print Dimension(Ci), Dimension(Di), Dimension(Doi);
+						   printf "\n";
+						   Cip+:=ComputeCi(C, Ci, Di, Doi, a, stop);
+			   end for;
+	     end if;
+
+
+	     printf "C%o calcul\'e.\n", j;
+	     printf "C%o est de dimension %o.\n", j, Dimension(Cip);
+	     Di:=Dual(Ci);
+	     Dip:=Dual(Cip);
+	     U:=CodeComplement(Dip, Di);
+	     Ci := Cip;
+//           print U;
+	     Append(~L, U);
+	 end for;
+	
+	return [*C1, L, Cip*];
+
+end function;
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//==================================================================
+// A function to compute C_{i_1,..., i_s} at multiple positions
+//==================================================================
+
+function ComputeCij(C, Cim1, Cu, Cv, A , stop)
+	 assert Cim1 subset C;
+	 assert Dimension(Cim1) gt 1;
+
+	 n:=Length(C);
+	 U:={1..n};
+	 for a in A do
+	 	 Exclude(~U, a);
+         end for;
+
+
+	 // First compute a suitable shooting window
+	 win:=AsymShoot(Cu, Cv);
+	 // print win;
+
+	 Ci:=LinearCode<BaseRing(C), n | 0>;
+	 
+
+	 if win eq [] then
+	    print "Pas de fenetre de
+	    	  raccourcissement pour ces codes";
+            return Ci;
+	 end if;
+
+	 index:=(#win) div 2 +1;
+	 short:=win[index];
+	 
+	 // print short;
+
+	 delete win;
+	 delete index;
+
+	 
+	 // The stopping test is when five consecutive 
+	 // Computations give the same code.
+
+	 test:=[n+1, n+2, n+3, n+4 , n+5];
+	 t:=5;
+	 j:=0;
+
+
+	 while (test[t] ne test[t-4]) do
+	       if j eq stop then
+	       	  print "Echec";
+		  return LinearCode<BaseRing(C), n | 0>;
+	       end if;
+
+	       S:=RandomSubset(U, short);
+	       Cs:=ShortenCode(C, S);
+	       Cim1s:=ShortenCode(Cim1, S);
+	       Cus:=ShortenCode(Cu, S);
+	       Cvs:=ShortenCode(Cv, S);
+
+	       Cis:=ExtractV(Cs, Cim1s, CodeProd(Cus, Cvs));
+	       Ci+:=UnShorten(Cis, S);
+	       // print Dimension(Cim1), Dimension(Ci);
+
+	       Append(~test, Dimension(Ci));
+	       t+:=1;
+	       j+:=1;
+	 end while;	 
+
+	 printf "Trouvé en %o iterations.\n", j-1;
+
+	 return Ci;
+
+end function;

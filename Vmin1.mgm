@@ -1,0 +1,39 @@
+//*******************************************************************
+// This file contains the function ExtractVmin
+//*******************************************************************
+
+
+
+
+//-------------------------------------------------------------
+// This function constructs C_{-i}.
+//=============================================================
+// INPUTS: C0, C1, CC.
+//-------------------------------------------------------------
+// OUTPUTS: The largest space W containing C0
+// such that W*C1 subset of CC.
+//=============================================================
+
+function ExtractVmin(C0,C1, CC);
+	 Full:=LinearCode(AmbientSpace(C0));
+	 D:=CodeComplement(Full, C0);	 
+	 VV:=VectorSpace(CC);
+
+	 B1:=Basis(C1);
+	 
+	 for v in B1 do
+	     Dv:=DiagonalMatrix(ElementToSequence(v));
+	     M:=GeneratorMatrix(D);
+	     Mv:=M * Dv;
+	     inter:=Basis(RowSpace(Mv) meet VV);
+	     assert IsConsistent(Mv,inter);
+	     U, V:=Solution(Mv, inter);
+	     D:=LinearCode(Matrix(U cat Basis(V))*M);
+
+	 end for;
+
+
+	 return C0+D;
+end function;
+
+

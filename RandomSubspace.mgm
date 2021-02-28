@@ -1,0 +1,25 @@
+//============================================================================
+// Inputs : a vector space V an integer k < dim(V)
+// Outputs : a random subspace of V.
+//============================================================================
+
+function RandomSubspace(V, k)
+	 d:=Dimension(V);
+	 assert k lt d+1;
+	 if k eq d
+	    then return V;
+	 end if;
+	 
+	 L:=[Random(V) : j in {1..k}];
+	 
+	 W:=sub<V|L>;
+	 if Dimension(W) eq k
+	    then return W;
+	 end if;
+
+	 while Dimension(W) lt k do
+	       W+:=sub<V|[Random(V)]>;
+	 end while;
+	 return W;
+
+end function;

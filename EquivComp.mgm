@@ -1,0 +1,142 @@
+//*******************************************************************
+// This file contains the functions EquivComp
+//                                  EquivCompOpt
+//*******************************************************************
+
+
+
+//==========================================================================
+// Given two codes C, D of the same length n and an integer fi<n
+// This function computes the space of matrices M
+// of the form M: ( U 0 0)
+//                ( 0 V 0)
+//                ( 0 0 W)
+// where U is diagonal and V,W are diagonal by 2x2 blocks,
+// with blocks of W of the form
+//                ( a b )
+//                ( 0 0 )
+// and such that C.M = D.
+//==========================================================================
+// Inputs : C, D, fi, fj
+//--------------------------------------------------------------------------
+// Outputs : a vector space of matrices.
+//==========================================================================
+
+
+function EquivComp(C, D, fi, fj)
+		 n:=Length(C);
+		 F:=BaseRing(C);
+		 assert Length(D) eq n;
+		 assert n gt fi-1;
+		 assert IsEven(n-fi-2*fj);
+
+		 BC:=Basis(C);
+		 BD:=Basis(Dual(D));
+		 m:=#BC * #BD;	
+		 mm:= fi + 2*(n- fi- 2*fj) + 2*fj;
+
+		 P:=[];
+		 for a in BC do
+		 	 for b in BD do
+			 	 Q:=[];
+			 	 A:=ElementToSequence(a);
+				 B:=ElementToSequence(b);
+				 Q cat:=[A[i]*B[i] : i in {1..fi}];
+				 Q cat:=&cat[[A[i]*B[i], A[i]*B[i+1], A[i+1]*B[i],
+				   		  A[i+1]*B[i+1]] : i in {fi+1..n-2*fj-1 by 2}];
+			         Q cat:=&cat[[A[i]*B[i], A[i]*B[i+1]] : i in {n-2*fj+1..n by 2}];				
+			     Append(~P, Q);
+			 end for;
+		 end for;
+//		 print #P[1];
+
+		 M:=Matrix(m,mm, P);
+		 printf "Matrice a %o lignes et %o colonnes.\n", m, mm;
+		 if Rank(M) eq m then
+		    return VectorSpace(BaseRing(C),0);
+		 end if;
+		 return NullspaceOfTranspose(M);
+//		 return M;
+end function;
+
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+//==========================================================================
+// An optimized version
+//==========================================================================
+
+
+function EquivCompOpt(C, D, fi, fj)
+		 n:=Length(C);
+		 F:=BaseRing(C);
+		 assert Length(D) eq n;
+		 assert n gt fi-1;
+		 assert IsEven(n-fi-2*fj);
+
+		 BC:=Basis(C);
+		 DD:=Dual(D);
+		 BD:=Basis(DD);
+		 bc:=#BC;
+		 bd:=#BD;
+		 m:=bc * bd;	
+		 mm:= fi + 2*(n- fi- 2*fj) + 2*fj;
+
+//-----------------------------------------------------
+// OPTIMISATION LOOP
+		 P:=[];
+
+		 for i:=1 to mm+100 do
+		     a:=Random(C);
+		     b:=Random(DD);
+
+		     Q:=[];
+	             A:=ElementToSequence(a);
+		     B:=ElementToSequence(b);
+		     Q cat:=[A[i]*B[i] : i in {1..fi}];
+		     Q cat:=&cat[[A[i]*B[i], A[i]*B[i+1], A[i+1]*B[i],
+			   		  A[i+1]*B[i+1]] : i in {fi+1..n-2*fj-1 by 2}];
+		     Q cat:=&cat[[A[i]*B[i], A[i]*B[i+1]] : i in {n-2*fj+1..n by 2}];				
+		     Append(~P, Q);
+
+		 end for;
+		 
+		 M0:=Matrix(mm+100,mm, P);
+		 m0:=Rank(M0);
+		 printf "Matrice a %o lignes, %o colonnes de rang %o.\n \n",NumberOfRows(M0), NumberOfColumns(M0), m0;
+		 if m0 gt mm-2 then
+		    print "Regle par loop rapide.\n \n";
+		    return VectorSpace(BaseRing(C),0);
+		 elif m0 eq mm-2 then
+		      print "Trouve avec resolution rapide.\n \n";
+		      return NullspaceOfTranspose(M0);
+		 end if;
+
+		 print "Non decele par boucle rapide.\n \n";
+
+//-----------------------------------------------------
+
+
+		 P:=[];
+		 for a in BC do
+		 	 for b in BD do
+			 	 Q:=[];
+			 	 A:=ElementToSequence(a);
+				 B:=ElementToSequence(b);
+				 Q cat:=[A[i]*B[i] : i in {1..fi}];
+				 Q cat:=&cat[[A[i]*B[i], A[i]*B[i+1], A[i+1]*B[i],
+				   		  A[i+1]*B[i+1]] : i in {fi+1..n-2*fj-1 by 2}];
+			         Q cat:=&cat[[A[i]*B[i], A[i]*B[i+1]] : i in {n-2*fj+1..n by 2}];				
+			     Append(~P, Q);
+			 end for;
+		 end for;
+//		 print #P[1];
+
+		 M:=Matrix(m,mm, P);
+		 printf "Matrice a %o lignes et %o colonnes.\n", m, mm;
+		 
+		 return NullspaceOfTranspose(M);
+//		 return M;
+end function;

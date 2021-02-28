@@ -1,0 +1,51 @@
+//*******************************************************************
+// This file contains the function SuppAndWeightComp
+//*******************************************************************
+
+//===================================================================
+// This function computes the support and the weight of
+// the firstly permuted code Cp
+// obtained from the public key C after
+// a support reordering in order to join the Galois pairs
+//-------------------------------------------------------------------
+// INPUTS : - The "pseudo-permutation" matrix M
+//          - The support of the subfield subcode SRS Ahard
+//          - the sizes fi , fj related to
+//            the diagonal block of the morphisms
+//-------------------------------------------------------------------
+// OUTPUTS : The new support for SRS, the weight vector.
+//===================================================================
+
+
+function SuppAndWeightComp(M, Ahard, fi, fj)
+		 n:=NumberOfColumns(M);
+		 S:=Ahard[1..fi] cat [0 : i in {fi+1..n-fj}];
+		 W:=[1/M[i,i] : i in {1..fi}] cat [0 : i in {fi+1..n-fj}];
+		 nn:=#S;
+		 assert nn eq #W;
+		 for j:= fi+1 to n-2*fj-1 by 2 do
+		 	 if M[j,j] ne 0 then
+			 	S[j]:=Ahard[j];
+				S[j+1]:=Ahard[j+1];
+				W[j]:=1/M[j,j];
+				W[j+1]:=1/M[j+1, j+1];
+			 else
+			 	S[j]:=Ahard[j+1];
+				S[j+1]:=Ahard[j];
+				W[j]:=1/M[j,j+1];
+				W[j+1]:=1/M[j+1, j];				
+			 end if;
+		 end for;
+
+		 for j:=1 to fj do
+		 	 if  M[n-2*fj-1+2*j, n-2*fj-1+2*j] ne 0 then
+			 	S[nn-fj+j]:=Ahard[n-2*fj-1+2*j];
+				W[nn-fj+j]:= 1/M[n-2*fj-1+2*j, n-2*fj-1+2*j];
+			 else
+			 	S[nn-fj+j]:=Ahard[n-2*fj+2*j];
+				W[nn-fj+j]:= 1/M[n-2*fj-1+2*j, n-2*fj+2*j];
+			 end if;
+		 end for;
+
+		 return [S, W];
+end function;

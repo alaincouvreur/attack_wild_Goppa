@@ -1,0 +1,34 @@
+//*******************************************************************
+// This file contains the function EquivMat
+//*******************************************************************
+
+//===================================================================
+// This function constructs the matrix providing the code
+// equivalence
+//-------------------------------------------------------------------
+// INPUTS : - A sequence U of length fi + 2(n-fi-fj)
+//          - the size fi of the diagonal block of the morphisms
+//===================================================================
+
+
+function EquivMat(U,fi)
+		  u:=#U;
+		  F:=Universe(U);
+		  assert IsDivisibleBy(u-fi,4);
+		  l:=(u-fi) div 4;
+		  n0:=fi+((u-fi) div 2);
+
+		  M:=ZeroMatrix(F,n0,n0);
+		  for j:=1 to fi do
+		  	  M[j,j]:=U[j];
+		  end for;
+
+		  for j:=1 to l do
+		  	  M[fi-1+2*j, fi-1+2*j] := U[fi-3+4*j];
+			  M[fi+2*j, fi-1+2*j] := U[fi-1+4*j];
+			  M[fi-1+2*j, fi+2*j] := U[fi-2+4*j];
+			  M[fi+2*j, fi+2*j] := U[fi+4*j];
+		  end for;
+
+		  return M;
+end function;

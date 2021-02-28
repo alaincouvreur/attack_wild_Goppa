@@ -1,0 +1,40 @@
+//*******************************************************************
+// This file contains the function GapSeq
+//*******************************************************************
+
+
+
+//-------------------------------------------------------------
+// This function computes the dimensions of a filatration
+// C , C_1, \ldots , C_r at one position for Goppa codes.
+//-------------------------------------------------------------
+
+//-------------------------------------------------------------
+// INPUTS: The base field F and its extension FF,
+//         the degree t of the Goppa polynomial
+//         the length n of the code
+//         the number d of the dimensions you wish to compute
+// Outputs : the sequence of dimensions
+//=============================================================
+
+
+
+load "Goppas.mgm";
+
+function GapSeq(F, FF, t, n, d)
+		 assert d gt 1;
+		 g:=RandomIrreduciblePolynomial(FF, t);
+		 Supp:= [a : a in FF];
+		 while #Supp gt n do
+		 	   Exclude(~Supp, Random(Supp));
+		 end while;
+
+
+		 C:=Goppa(Supp, g^(#F), F);
+		 L:=[[1, Dimension(ShortenCode(C, 1))]];
+			 for j:=2 to d do
+				Append(~L, [j,Dimension(Vith(Supp, g^(#F), Supp[1], j, F))]);
+			 end for;
+		 return L;		 
+
+end function;

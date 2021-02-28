@@ -1,0 +1,326 @@
+//************************************************************
+// This file contains the functions BreakKey
+//                                  BreakKeyManual
+//************************************************************
+
+
+load "CodeProd.mgm";
+load "CodeSquare.mgm";
+load "Goppas.mgm";
+load "CompCi.mgm";
+// load "UnShorten.mgm";
+// load "Vmin1.mgm";
+// load "V2.mgm";
+load "comp_xi.mgm";
+load "ByPairs.mgm";
+load "MiniPols.mgm";
+load "SuppReorg.mgm";
+load "EquivComp.mgm";
+load "EquivComp2.mgm";
+load "EquivMatrice.mgm";
+load "SuppAndWeightComp.mgm";
+load "CompGRS.mgm";
+load "PermuteSeq.mgm";
+load "GapSequence.mgm";
+
+//============================================================
+// This function is the attack
+//------------------------------------------------------------
+// INPUTS : - a Goppa code C=Gamma(L, g^(q-1))
+//          - the degree r of the polynomial g.
+//          - a stopping parameter (by default, choose stop = 1000).  
+//------------------------------------------------------------
+// OUTPUTS : A pair of two sequences [S, W];
+// where S is the support of a GRS code and W the weight
+// such that SubfieldSubcode(GRS) = C.
+//============================================================
+
+function BreakKey(C,r, stop)
+		 F:=BaseRing(C);
+		 FF<w>:=ext<F | 2>;
+		 q:=#F;
+		 n:=Length(C);
+
+// Compute the smallest integer z
+// such that C_i(z) = C_i (q+1).
+
+		 GS:=GapSeq(F,FF,r,n,q+1);
+		 print GS;
+
+		 DimCqP1:=GS[q+1][2];
+		 U:=[a: a in GS | a[2] eq DimCqP1];
+		 z:=U[1][1];
+
+
+
+print "On calcule C_0(q+1)";
+
+LC0:=MultiCompCi(C, 1, z, stop);
+C0:=LC0[3];
+delete LC0;
+
+if Dimension(C0) eq DimCqP1 then				   
+   print "C_0(q+1) est calcule";
+else
+   print "Erreur! C_0(q+1) n'est pas de la dimension attendue";
+   return 0;
+end if;
+
+print "\n";
+print "On calcule C_1(q+1)";
+
+LC1:=MultiCompCi(C, 2, z, stop);
+C1:=LC1[3];
+delete LC1;
+
+if Dimension(C1) eq DimCqP1 then				   
+   print "C_1(q+1) est calcule";
+else
+   print "Erreur! C_1(q+1) n'est pas de la dimension attendue";
+   return 0;
+end if;
+
+print "\n";
+print "Maintenant on calcule les normes et on les met par paires";
+
+R0:=CompXi(C, C0, 1);
+R1:=CompXi(C, C1, 2);
+
+
+R0:=[ElementToSequence(r) : r in R0];
+R1:=[ElementToSequence(r) : r in R1];
+
+//print R0;
+print "\n";
+
+//print R1;
+
+print "\n";
+printf "On trouve %o candidats pour les normes de supports.\n", #R0;
+print "\n";
+
+assert #R0 eq #R1;
+
+	
+Pairs:=[[R0[i],ByPairs(R0,R1, i)] : i in {1..#R0} ];
+
+print "Appairage reussi.\n";
+print "\n";
+delete R0, R1;
+
+// Maintenant on teste toutes les paires jusqu'à ce qu'on en ait une bonne.
+
+t:=0;
+d:=q^2 - r*(q+1);
+jj:=1;
+while t eq 0 do
+	printf "Essai avec la paire candidate numero %o.\n", jj;
+	print "\n";
+	print "Calcul des polynomes minimaux.\n";
+	print "\n";
+	
+	P:=MiniPols(Pairs[jj][1], Pairs[jj][2]);
+
+	print "C'est fait! \n \n";
+	print "On reorganise le support.\n \n";
+
+	U:=SuppReorg(P, F, FF);
+
+	//-----------------------------------------------
+	fi:=U[4];
+	fj:=U[5];
+	s:=U[3];
+	Cp:=C^s;
+
+	printf "Pour ce candidat, il a %o elements du support dans Fq,\n", fi;
+	printf "et %o elements du support dans F_{q^2} dont le conjugue n'est pas dans le support.\n \n", fj;
+
+	if fj eq 0 then Cpe:=Cp;
+	   else Cpe:=UnShorten(Cp, {n-fj+2..n+fj by 2});
+	end if;
+	A:=U[1];
+	Ahard:=U[2];
+
+	M:=[l : l in FF];
+	M:=Ahard cat [l : l in M | l notin Ahard];
+	
+	R<x>:=PolynomialRing(FF);	 
+    X:=[x^i : i in {0..d-1}];
+	G:=Matrix(d, q^2, [[Evaluate(a, b) : b in M] : a in X]);
+	RS:=LinearCode(G);
+	SRS:=SubfieldSubcode(RS, F);		  
+	SRS := ShortenCode(SRS, {#Ahard+1..q^2});
+	delete RS, G;
+
+
+	print Dimension(Cp);
+	print Dimension(Cpe);
+	print Dimension(SRS);
+
+	T:=EquivComp(Cpe, SRS, fi, fj);
+    t:=Dimension(T);
+
+	printf "L'espace des morphismes entre notre code et le subfield de RS
+	est de dimension %o.\n \n", t;
+
+	if t gt 10 then 
+	   print "Ce candidat propose un trop grand espace
+	   		 de morphismes, on le laisse de côté.\n \n";
+	   t:=0;		 
+	end if;
+	jj+:=1;
+end while;
+
+// Maintenant, on a de bons candidats
+print "On a une paire candidate pour construire un GRS";
+
+		U:=EquivComp2(T, fi, fj);
+		Coeffts:=U[1];
+		M:=EquivMatrice(Coeffts, fi ,fj);
+		assert LinearCode(BasisMatrix(Cpe) * M) subset SRS;
+		N:=SuppAndWeightComp(M,Ahard, fi,fj);
+		
+// Compute the GRS code.
+		W0:=CompGRS(N[1]);
+		W1:=[W0[i]*N[2][i] : i in {1..#N[2]}];
+		S:=PermuteSeq(N[1],s^(-1));
+		W:=PermuteSeq(W1,s^(-1));
+
+		GRS:=GRSCode(S,W, n - r*(q+1));
+		assert SubfieldSubcode(GRS,F) eq C;
+
+		return [S,W];
+end function;
+
+//========================
+// A "manual" variant
+//========================
+
+
+function BreakKeyManual(C,C0, C1, r)
+		 F:=BaseRing(C);
+		 FF<w>:=ext<F | 2>;
+		 q:=#F;
+		 n:=Length(C);
+
+print "Maintenant on calcule les normes.\n";
+
+R0:=CompXi(C, C0, 1);
+R1:=CompXi(C, C1, 2);
+
+print "C'est fait.\n";
+
+R0:=[ElementToSequence(r) : r in R0];
+R1:=[ElementToSequence(r) : r in R1];
+
+a0:=#R0;
+// print R0;
+print "\n";
+
+// print R1;
+
+print "\n";
+printf "On trouve %o candidats pour les normes de supports.\n", #R0;
+print "\n";
+
+assert #R0 eq #R1;
+t:=0;
+jj:=1;
+
+
+while #R0 gt 0 and t eq 0 do
+	u0:=R0[1];
+	u1:=ByPairs(R0,R1, 1);
+	// print #R0;
+	Exclude(~R0, u0);
+	Exclude(~R1, u1);
+	print "\n";
+
+
+// Maintenant on teste la paire.
+   	d:=q^2 - r*(q+1);
+	printf "Essai avec la paire candidate numero %o.\n", jj;
+	print "\n";
+	print "Calcul des polynomes minimaux.\n";
+
+	
+	P:=MiniPols(u0, u1);
+
+	print "C'est fait! \n \n";
+	print "On reorganise le support.\n \n";
+
+	U:=SuppReorg(P, F, FF);
+
+	//-----------------------------------------------
+	fi:=U[4];
+	fj:=U[5];
+	s:=U[3];
+	Cp:=C^s;
+
+	printf "Pour ce candidat, il a %o elements du support dans Fq,\n", fi;
+	printf "et %o elements du support dans F_{q^2} dont le conjugue n'est pas dans le support.\n \n", fj;
+
+	if fj eq 0 then Cpe:=Cp;
+	   else Cpe:=UnShorten(Cp, {n-fj+2..n+fj by 2});
+	end if;
+	A:=U[1];
+	Ahard:=U[2];
+
+	M:=[l : l in FF];
+	M:=Ahard cat [l : l in M | l notin Ahard];
+	
+	R<x>:=PolynomialRing(FF);	 
+        X:=[x^i : i in {0..d-1}];
+	G:=Matrix(d, q^2, [[Evaluate(a, b) : b in M] : a in X]);
+	RS:=LinearCode(G);
+	SRS:=SubfieldSubcode(RS, F);		  
+	SRS := ShortenCode(SRS, {#Ahard+1..q^2});
+	delete RS, G;
+
+
+	printf "Notre code est de Dimension %o.\n", Dimension(Cp);
+
+	printf "Le SRS est de Dimension %o.\n", Dimension(SRS);
+
+	T:=EquivCompOpt(Cpe, SRS, fi, fj);
+    	a:=Dimension(T);
+
+	printf "L'espace des morphismes entre notre code et le subfield de RS
+	est de dimension %o.\n \n", a;
+
+	if a gt 10 then 
+	   print "Ce candidat propose un trop grand espace
+	   		 de morphismes, on le laisse de côté.\n \n";
+	   t:=0;
+	   elif a gt 0 then		 
+	   V:=EquivComp2(T, fi, fj);
+	   t:=#V;
+	end if;
+
+	jj+:=1;
+end while;
+
+// Maintenant, on a de bons candidats
+
+if t eq 0 then
+   print "On n'a pas trouvé de paire";
+   return 0;
+end if;
+
+print "On a une paire candidate pour construire un GRS";
+		Coeffts:=V[1];
+		M:=EquivMatrice(Coeffts, fi ,fj);
+		assert LinearCode(BasisMatrix(Cpe) * M) subset SRS;
+		N:=SuppAndWeightComp(M,Ahard, fi,fj);
+		
+// Compute the GRS code.
+		W0:=CompGRS(N[1]);
+		W1:=[W0[i]*N[2][i] : i in {1..#N[2]}];
+		S:=PermuteSeq(N[1],s^(-1));
+		W:=PermuteSeq(W1,s^(-1));
+
+		GRS:=GRSCode(S,W, n - r*(q+1));
+		assert SubfieldSubcode(GRS,F) eq C;
+
+		return S,W,jj-1;
+end function;

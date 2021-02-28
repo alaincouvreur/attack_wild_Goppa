@@ -1,0 +1,66 @@
+//*******************************************************************
+// This file contains the functions: Unshorten
+//                                   ExtShorten
+//*******************************************************************
+
+
+
+////////////////////////////////////////////////////////////////////////////
+//  In this file several function completing the primitive ShortenCode    //
+// of Magma                                                               //
+////////////////////////////////////////////////////////////////////////////
+
+
+
+
+//==========================================================================
+// Given a code C of length n and a subset {a_1, ..., a_t} of {1,..., n+t}
+// we get a code of length n+t obtained from C by inserting
+// zeroes at the positions a_1,..., a_t.
+//--------------------------------------------------------------------------
+// INPUTS: The code C and a set of positive integers S
+// OUTPUT: The new code with prescribed zero positions
+//==========================================================================
+
+function UnShorten(C, S);
+	 t:=#S;
+	 n:=Length(C);
+	 IS:=Sort(SetToIndexedSet(S));
+
+	 assert Max(S) lt n+t+1;
+
+	 G:=GeneratorMatrix(C);
+	 T:=Transpose(G);
+	 L:=RowSequence(T);
+	 Z:=[0 : i in {1..#L[1]}];
+	       
+	 for j in IS do
+	     L:=L[1..j-1] cat [Z] cat L[j..#L];
+	 end for;
+	 GG:=Transpose(Matrix(L));
+	 return LinearCode(GG);
+end function;
+
+
+
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+//=====================================================================
+//This function shortens and re-extends by zero.
+//=====================================================================
+
+function ExtShorten(C, S)
+	 C0:=ShortenCode(C,S);
+	 C1:=UnShorten(C0, S);
+	 return C1;
+end function;
+
+
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

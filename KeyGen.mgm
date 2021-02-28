@@ -1,0 +1,36 @@
+//********************************************************************
+// This program contains the function KeyGen
+//********************************************************************
+
+load "Goppas.mgm";
+load "PermuteSeq.mgm";
+
+//====================================================================
+// Function KeyGen(q,r,a, d) produces a Wild McEleice public Key
+// Gamma (L, g^(q)) for g irreducible and L a random support.
+//--------------------------------------------------------------------
+// INPUTS : the cardinality q of the base field;
+//          the degree of the polynomial g;
+//          the number of punctured positions q^d -a = #L;
+//          the degree d of the base field extension
+//--------------------------------------------------------------------
+// OUTPUTS : C, L, g such that C is the public Key 
+//           L is its support and g its polynomial.
+//====================================================================
+
+function KeyGen(q,r,a,d)
+		 F<w>:=GF(q);
+		 FF<t>:=ext<F|d>;
+		 L:=[b :b in FF];
+		 for j:=1 to a do
+		 	 Exclude(~L, Random(L));
+		 end for;
+
+		 n:=#L;
+		 G:=Sym(n);
+		 s:=Random(G);
+		 L:=PermuteSeq(L,s);
+		 g:=RandomIrreduciblePolynomial(FF,r);
+		 C:=Goppa(L, g^q, F);
+		 return C, L, g;
+end function;

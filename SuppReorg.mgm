@@ -1,0 +1,122 @@
+//*******************************************************************
+// This file contains the function SuppReorg
+//*******************************************************************
+
+
+
+//===========================================================================
+// This function provides the first reorganisation of the support for our 
+// public code.
+//
+// This new support is ordered so that: the two first positions
+// are 0 and 1, the following ones are positions in F_q.
+// The next positions are pairs of conjugated elements
+// the final positions are elements in \F{q^2} whose conjugate isn't in the
+// support.
+//===========================================================================
+
+//===========================================================================
+// INPUTS  :  The output of the function MinPols, that is the
+//            list of minimal polynomials of the elements of the support.
+//            The base fields Fq and F_{q^2}
+//---------------------------------------------------------------------------
+// OUTPUTS :  The reordered support with an arbitrary decision on the
+//			  oredering of the roots.
+//            A permutation s sending the former support onto the new one.
+//            the number fi of elements in Fq in the support
+//            (including 0 et 1)
+//            the number fj of elements of the support whose conjugate
+//            is out of the support.
+//===========================================================================
+
+function SuppReorg(P,F, FF)
+		 n:=#P;
+		 S:=SymmetricGroup(n);
+		 s:=S!1;
+		 
+		 A:=[Roots(p, FF) : p in P];
+		 
+	// Let us remove the multiplicities of the roots.
+		 A:=[[a[i][1] : i in {1..#a}] : a in A];
+		 A:=[SequenceToSet(a) : a in A];
+
+	// We first push to the left the positions corresponding to 
+	// elements of F_q.
+	     
+		 assert A[1] eq {FF| 0};
+		 assert A[2] eq {FF| 1};
+		 
+		 I:=[i: i in {3..n} | #A[i] eq 1];  
+		 Sort(~I);		 
+
+		 for j:=1 to #I do
+		 	 if I[j] gt j+2 then  		 
+			 	u:= S!(j+2, I[j]);
+				A:=[A[i^u] : i in {1..n}];
+		 		s*:=u;		 
+			 end if;	 
+		 end for;
+
+		 assert &and[#A[i] eq 1 : i in {1..2+#I}];
+		 assert #A[3+#I] gt 1;
+
+		 fi:=#I+2;
+		 
+
+    // Second, we push to the right the elements in
+	// F_{q^2} whose conjugate is not in the support.
+
+	   	 M:={fi+1..n};	   
+
+	   	 Pairs := [[] : i in {1..fi}] cat
+		          [ [i : i in Exclude(M, j) | A[i] eq A[j] ]
+		               : j in {fi+1..n} ];
+					   
+		 
+		 J:=[i: i in {fi+1..n} | #Pairs[i] eq 0];
+		 fj:=#J;
+		 for i:=fj to 1 by -1 do
+		 	 if J[i] ne n+i-fj then
+//				u:=&*[S!(J[i], n+i-fj)];
+				u:=S!(J[i], n+i-fj);
+		 		A:=[A[i^u] : i in {1..n}];
+		 		s*:=u;
+			 end if;
+	     end for;
+
+	   	 Pairs := [[] : i in {1..fi}] cat
+		          [ [i : i in Exclude(M, j) | A[i] eq A[j] ]
+		               : j in {fi+1..n} ];
+
+		 assert &and[#Pairs[i] eq 1 : i in {fi+1..n-fj}];
+		 assert &and[#Pairs[i] eq 0 : i in {1..fi} join {n-fj+1..n}];
+
+
+	// Third, we  to consider pairs of conjugated elements
+		 
+		 for j:=fi+1 to n-fj-1 do
+		 	 R:=[i : i in {j+1..n} | A[i] eq A[j]];
+
+			 if #R gt 1 then
+			 	print "Erreur, trois membres dans une paire!!!";
+			 	return 0;
+			 end if;
+
+
+			 if (#R eq 1) and (R[1] ne j+1) then
+					u:=S!(j+1, R[1]);
+					A:=[A[i^u] : i in {1..n}];
+					s*:=u;
+			 end if;
+		 end for;
+		 		 
+	// Now, we take a hard decision for A.
+
+	Ahard:=[SetToSequence(a) : a in A];
+	Ahard:={@ a : a in Ahard@};	
+	Ahard:=[a : a in Ahard];
+	Ahard := &cat(Ahard);
+
+	return [* A, Ahard, s , fi, fj *];
+
+end function;

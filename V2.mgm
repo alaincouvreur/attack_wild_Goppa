@@ -1,0 +1,64 @@
+//*******************************************************************
+// This file contains the function ExtractV
+//*******************************************************************
+
+
+
+//=============================================================================
+// This function takes as inputs three codes of the same length 
+// basically, the first one is V0, the second one is V1 and the third one is
+// V1^2. The function Outputs V2
+//
+// More Precisely, it computes the subspace A of V1 such that A*V1
+// in included in VV.
+//-----------------------------------------------------------------------------
+// INPUTS : V0, V1, VV.
+// OUTPUT : the largest subspace A of V1 such that A*V0 subset of VV
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+// Usually this function computes V2 by giving V0, V1, V1*V1 as inputs
+// But you can compute many other subspace, for instance giving
+// V0, V4, V2*V3 as inputs it may return you V5 or at least a subspace of it.
+//-----------------------------------------------------------------------------
+
+
+function ExtractV(V0,V1, VV);
+	 
+	 assert V1 subset V0;
+
+	 V2:=V1;
+
+	 // First we need a basis of a complement of V1 in V0
+	 L:=Basis(Complement (VectorSpace(V0), VectorSpace(V1)));
+	 
+	 for v0 in L do
+
+		 // Here, given an element v0 of V0\V1, we compute
+		 // a basis matrix of v0*V1.
+
+
+	 	 M1:=BasisMatrix(V2);
+ 	 	 Dv0:=DiagonalMatrix(ElementToSequence(v0));
+	 	 v0M1:= M1 * Dv0;
+		 
+		 // Now, we compute the elements v of V1 such that
+		 // v0*v in VV.
+
+	 	 Inter:=Basis(RowSpace(v0M1) meet VectorSpace(VV));
+	 	 assert IsConsistent(v0M1,Inter);
+	 	 U, V:=Solution(v0M1, Inter);
+
+
+
+//  	 printf "Dim(V)=%o\n", Dimension(V);
+
+
+		 
+		 V2 meet:=LinearCode(Matrix(U cat Basis(V))*M1);
+         end for;
+
+	 return V2;
+end function;
+
+

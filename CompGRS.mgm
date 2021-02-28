@@ -1,0 +1,26 @@
+//******************************************************************
+// This fils contains the function CompGRS
+//******************************************************************
+
+
+//==================================================================
+// This function computes the weight vector of a GRS code
+// obtained by shortening a full-support Reed--Solomon code
+//------------------------------------------------------------------
+// INPUTS : The support of the Shortened full-support Reed Solomon
+// code
+//------------------------------------------------------------------
+// Outputs the Weight vector
+//==================================================================
+
+function CompGRS(S)
+		 FF:=Universe(S);
+		 M:=[a : a in FF];
+		 R<x>:=PolynomialRing(FF);
+		 A:=[ a : a in M | a notin S];
+		 if #A eq 0 then P:=R!1;
+		 	else P:=&*[x-a : a in A];
+	     end if;
+		 return [Evaluate(P, s) : s in S];
+
+end function;

@@ -1,0 +1,51 @@
+//*******************************************************************
+// This file contains the function EquivResearch
+//*******************************************************************
+
+
+
+//==========================================================================
+// Given two codes C, D of the same length n and an integer fi<n
+// This function computes the space of matrices M
+// of the form M: ( A 0 )
+//                ( 0 B )
+// where A is diagonal and B is diagonal by 2x2 blocks,
+// such that C.M = D.
+//==========================================================================
+// Inputs : C, D, fi
+//--------------------------------------------------------------------------
+// Outputs : a vector space of matrices.
+//==========================================================================
+
+
+function EquivResearch(C, D, fi)
+		 n:=Length(C);
+		 F:=BaseRing(C);
+		 assert Length(D) eq n;
+		 assert n gt fi-1;
+		 assert IsEven(n-fi);
+
+		 m:=fi + 2 * (n-fi);
+
+		 BC:=Basis(C);
+		 BD:=Basis(Dual(D));
+		 mm:=#BC * #BD;	
+		 
+		 P:=[];
+		 for a in BC do
+		 	 for b in BD do
+			 	 Q:=[];
+			 	 A:=ElementToSequence(a);
+				 B:=ElementToSequence(b);
+				 Q cat:=[A[i]*B[i] : i in {1..fi}];
+				 Q cat:=&cat[[A[i]*B[i], A[i]*B[i+1], A[i+1]*B[i],
+				   		  A[i+1]*B[i+1]] : i in {fi+1..n-1 by 2}];				
+			     Append(~P, Q);
+			 end for;
+		 end for;
+
+		 M:=Matrix(mm, m, P);
+		 print mm, m;
+		 return NullspaceOfTranspose(M);
+//		 return M;
+end function;
