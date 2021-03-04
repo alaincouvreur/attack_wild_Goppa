@@ -10,7 +10,10 @@ Alain Couvreur, Ayoub Otmani, Jean-Pierre Tillich. Polynomial Time Attack on Wil
 IEEE Trans. Inform. Theory. 63(1), 404-427, 2017. 
 ------------------------------
 
-You can test the attack by launching one of the
+The function to run the attack is BreakKey in file
+BreakKey.mgm
+
+You can test manual optimized the attack by launching one of the
 scripts with name test*
 
 Example:

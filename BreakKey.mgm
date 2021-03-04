@@ -111,12 +111,12 @@ function BreakKey(C,r, stop)
    jj:=1;
    while t eq 0 do
    		printf "Try with candidate pair number: %o.\n", jj;
-		print "\nComputing minimal polynomials.\n";
+		print "\nComputing minimal polynomials.";
 	
 		P:=MiniPols(Pairs[jj][1], Pairs[jj][2]);
 
-		print "Done!\n\n";
-		print "Reorganising the support.\n\n";
+		print "Done!";
+		print "Reorganising the support.\n";
 
 		U:=SuppReorg(P, F, FF);
 
@@ -157,7 +157,7 @@ function BreakKey(C,r, stop)
     	t:=Dimension(T);
 
 		printf "The space of morphisms from the code to the subfield of RS code
-	has dimension %o.\n \n", t;
+			   has dimension %o.\n\n", t;
 
 		if t gt 10 then 
 	   	    print "This candidate has a two large space of
@@ -237,13 +237,13 @@ function BreakKeyManual(C,C0, C1, r)
 // Maintenant on teste la paire.
    		d:=q^2 - r*(q+1);
 		printf "Try with pair candidat number: %o.\n", jj;
-		print "\nComputing the minimal polynomials.\n";
+		print "\nComputing the minimal polynomials.";
 
 	
 		P:=MiniPols(u0, u1);
 
-		print "Done!\n\n";
-		print "Reorganising the support.\n\n";
+		print "Done!";
+		print "Reorganising the support.";
 
 		U:=SuppReorg(P, F, FF);
 
@@ -254,7 +254,7 @@ function BreakKeyManual(C,C0, C1, r)
 		Cp:=C^s;
 
 		printf "For this candidate, there are %o elements of the support in Fq,\n", fi;
-		printf "and %o elements of the support in F_{q^2} whose conjugate is not in the support.\n \n", fj;
+		printf "and %o elements of the support in F_{q^2} whose conjugate is not in the support.\n\n", fj;
 
 		if fj eq 0 then
 		   Cpe:=Cp;
