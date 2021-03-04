@@ -23,7 +23,7 @@ function CompXi(C, Cqp1,a)
 		 L:=[];
 		 print Dimension(DD);
 		 if Dimension(DD) gt 7 then
-		 	print "espace de recherche trop large";
+		 	print "The space of search is too large";
 		 	return 0;
 		 end if;
 

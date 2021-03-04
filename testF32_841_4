@@ -7,23 +7,25 @@ a:=q^2-841;
 
 C, L, g:=KeyGen(q,r,a,2);
 
-printf "Support L=%o", L;
-print "\n";
-
-printf "Polynome de Goppa g=%o", g;
-print "\n";
+print "\n\n************************************";
+printf "\nGoppa polynomial:\ng=%o\n\n", g;
 
 n:=Length(C);
-printf "Code de Longueur %o.\n",n;
-printf "Code de Dimension %o.\n",Dimension(C);
+printf "Code of length %o.\n",n;
+printf "Code of dimension %o.\n",Dimension(C);
 
 
 F:=GF(q);
 FF<w>:=ext<F|2>;
 
-
-GS:=GapSeq(F,FF, r, n, 23);
+printf "Computing the gap sequence....";
+GS:=GapSeq(F,FF, r, n, q+1);
+print " [OK]";
 print GS;
+
+print "***********************************";
+print "Computation of the filtrations:\n\n";
+print "***********************************";
 
 A0:=MultiCompCi (C, 1, 23, 1000);
 A1:=MultiCompCi (C, 2, 23, 1000);
@@ -34,26 +36,27 @@ C1m11:=ComputeCmi(C, A1[1] meet Dual(&+A1[2][1..11]), C, C, 2, 1000);
 C0m11:=UnShorten(C0m11, {1});
 C1m11:=UnShorten(C1m11, {2});
 
-printf "Dimension de C0_{-11} = %o.\n", Dimension(C0m11);
-printf "Dimension de C1_{-11} = %o.\n", Dimension(C1m11);
+printf "Dimension of C0_{-11} = %o.\n", Dimension(C0m11);
+printf "Dimension of C1_{-11} = %o.\n", Dimension(C1m11);
 
 C0:=A0[3];
 C1:=A1[3];
 
 
-print "tests sur les C_i(23)";
+print "Tests on the C_i(23)";
 print Dimension(C0) eq GS[23][2];
 print Dimension(C1) eq GS[23][2];
 
 
-print "Etape de calcul des C_i r\'eussie.\n";
+print "Computation of the filtrations Done!\n";
+print "************************************\n";
 
 		 F:=BaseRing(C);
 		 FF<w>:=ext<F | 2>;
 		 n:=Length(C);
 
 
-print "Maintenant on calcule les normes et on les met par paires";
+print "Computation of the norms and association by pairs";
 
 R0:=CompXi(C0m11, C0, 1);
 R1:=CompXi(C1m11, C1, 2);
@@ -65,7 +68,7 @@ R1:=[ElementToSequence(r) : r in R1];
 a0:=#R0;
 
 print "\n";
-printf "On trouve %o candidats pour les normes de supports.\n", #R0;
+printf "We found %o candidates for the norms of the supports.\n", #R0;
 print "\n";
 
 assert #R0 eq #R1;
@@ -80,15 +83,15 @@ while #R0 gt 0 and t eq 0 do
 	print "\n";
 
    	d:=q^2 - r*(q+1);
-	printf "Essai avec la paire candidate numero %o.\n", jj;
+	printf "Try with candidate pair number: %o.\n", jj;
 	print "\n";
-	print "Calcul des polynomes minimaux.\n";
+	print "Computation of the minimal polynomials.\n";
 	print "\n";
 	
 	P:=MiniPols(u0, u1);
 
-	print "C'est fait! \n \n";
-	print "On reorganise le support.\n \n";
+	print "Done! \n \n";
+	print "Re-organizing the support.\n \n";
 
 	U:=SuppReorg(P, F, FF);
 
@@ -98,8 +101,8 @@ while #R0 gt 0 and t eq 0 do
 	s:=U[3];
 	Cp:=C^s;
 
-	printf "Pour ce candidat, il a %o elements du support dans Fq,\n", fi;
-	printf "et %o elements du support dans F_{q^2} dont le conjugue n'est pas dans le support.\n \n", fj;
+	printf "For this candidat, there are %o elements of the support in Fq,\n", fi;
+	printf "and %o elements of the support in F_{q^2} whose conjugate is not in the support.\n \n", fj;
 
 	if fj eq 0 then Cpe:=Cp;
 	   else Cpe:=UnShorten(Cp, {n-fj+2..n+fj by 2});
@@ -112,7 +115,7 @@ while #R0 gt 0 and t eq 0 do
 	M:=Ahard cat [l : l in M | l notin Ahard];
 
 	R<x>:=PolynomialRing(FF);	 
-        X:=[x^i : i in {0..d-1}];
+   	X:=[x^i : i in {0..d-1}];
 	G:=Matrix(d, q^2, [[Evaluate(a, b) : b in M] : a in X]);
 	RS:=LinearCode(G);
 	SRS:=SubfieldSubcode(RS, F);		  
@@ -125,14 +128,12 @@ while #R0 gt 0 and t eq 0 do
 	print Dimension(SRS);
 
 	T:=EquivComp(Cpe, SRS, fi, fj);
-    	a:=Dimension(T);
+    a:=Dimension(T);
 
-	printf "L'espace des morphismes entre notre code et le subfield de RS
-	est de dimension %o.\n \n", a;
+	printf "The space of morphisms from our code to the SRS has dimension: %o.\n \n", a;
 
 	if a gt 10 then 
-	   print "Ce candidat propose un trop grand espace
-	   		 de morphismes, on le laisse de côté.\n \n";
+	   print "This candidate has a too large space of morphisms, we lave it aside.\n \n";
 	   t:=0;
 	   elif a gt 0 then		 
 	   V:=EquivComp2(T, fi, fj);
@@ -143,25 +144,25 @@ while #R0 gt 0 and t eq 0 do
 end while;
 
 if t eq 0 then
-   print "On n'a pas trouvé de paire";
+   print "Pair not found";
 else 
-     print "On a une paire candidate pour construire un GRS";
-		Coeffts:=V[1];
-		M:=EquivMatrice(Coeffts, fi ,fj);
-		assert LinearCode(BasisMatrix(Cpe) * M) subset SRS;
-		N:=SuppAndWeightComp(M,Ahard, fi,fj);
+    print "We found a candidate pair to construct a GRS";
+    Coeffts:=V[1];
+	M:=EquivMatrice(Coeffts, fi ,fj);
+	assert LinearCode(BasisMatrix(Cpe) * M) subset SRS;
+	N:=SuppAndWeightComp(M,Ahard, fi,fj);
 		
-		// Compute the GRS code.
-		W0:=CompGRS(N[1]);
-		W1:=[W0[i]*N[2][i] : i in {1..#N[2]}];
-		S:=PermuteSeq(N[1],s^(-1));
-		W:=PermuteSeq(W1,s^(-1));
+	// Compute the GRS code.
+	W0:=CompGRS(N[1]);
+	W1:=[W0[i]*N[2][i] : i in {1..#N[2]}];
+	S:=PermuteSeq(N[1],s^(-1));
+	W:=PermuteSeq(W1,s^(-1));
 
-		GRS:=GRSCode(S,W, n - r*(q+1));
-		print "Test de comparaison entre l'alternant construit et la cle publique.\n \n";
-		print SubfieldSubcode(GRS,F) eq C;
+	GRS:=GRSCode(S,W, n - r*(q+1));
+	print "Comparision with the original public key.\n \n";
+	print SubfieldSubcode(GRS,F) eq C;
 
-		print "\n \n";
-		print S;
-		print W;
+	print "\n \n";
+	print S;
+	print W;
 end if;

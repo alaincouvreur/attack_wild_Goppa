@@ -17,8 +17,6 @@
 // Outputs : the sequence of dimensions
 //=============================================================
 
-
-
 load "Goppas.mgm";
 
 function GapSeq(F, FF, t, n, d)
@@ -36,5 +34,4 @@ function GapSeq(F, FF, t, n, d)
 				Append(~L, [j,Dimension(Vith(Supp, g^(#F), Supp[1], j, F))]);
 			 end for;
 		 return L;		 
-
 end function;

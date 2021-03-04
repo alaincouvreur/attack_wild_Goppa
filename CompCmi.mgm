@@ -38,9 +38,8 @@ function ComputeCmi(C, Ci, Cu, Cv, a, stop)
 	 Cmi:=LinearCode(AmbientSpace(pC));
 
 	 if win eq [] then
-	    print "Pas de fenetre de
-	    	  raccourcissement pour ces codes";
-            return Cmi;
+	    print "No shortening window for these codes";
+        return Cmi;
 	 end if;
 
 	 index:=(#win) div 2 +1;
@@ -72,7 +71,7 @@ function ComputeCmi(C, Ci, Cu, Cv, a, stop)
 	       Append(~test, Dimension(Cmi));
 	 end while;	 
 
-	 printf "Trouvé en %o iterations.\n", j;
+	 printf "Found in %o iterations.\n", j;
 
 	 return Cmi;
 
@@ -98,9 +97,8 @@ function ComputeCmiNoPuncture(C, Ci, Cu, Cv, stop)
 	 Cmi:=LinearCode(AmbientSpace(C));
 
 	 if win eq [] then
-	    print "Pas de fenetre de
-	    	  raccourcissement pour ces codes";
-            return Cmi;
+	    print "No shortening window for these codes";
+        return Cmi;
 	 end if;
 
 	 index:=(#win) div 2 +1;
@@ -132,7 +130,7 @@ function ComputeCmiNoPuncture(C, Ci, Cu, Cv, stop)
 	       Append(~test, Dimension(Cmi));
 	 end while;	 
 
-	 printf "Trouvé en %o iterations.\n", j;
+	 printf "Found in %o iterations.\n", j;
 
 	 return Cmi;
 

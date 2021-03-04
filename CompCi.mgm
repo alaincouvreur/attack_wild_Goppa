@@ -43,8 +43,8 @@ function ComputeCi(C, Cim1, Cu, Cv, a , stop)
 	 
 
 	 if win eq [] then
-	    print "Pas de fenetre de raccourcissement pour ces codes";
-            return Ci;
+	    print "No shortening window for these codes";
+        return Ci;
 	 end if;
 
 	 index:=(#win) div 2 +1;
@@ -66,8 +66,8 @@ function ComputeCi(C, Cim1, Cu, Cv, a , stop)
 
 	 while (test[t] ne test[t-4]) do
 	       if j eq stop then
-	       	  print "Echec";
-		  return LinearCode<BaseRing(C), n | 0>;
+	       	  print "FAIL";
+		  	  return LinearCode<BaseRing(C), n | 0>;
 	       end if;
 
 	       S:=RandomSubset(U, short);
@@ -85,7 +85,7 @@ function ComputeCi(C, Cim1, Cu, Cv, a , stop)
 	       j+:=1;
 	 end while;	 
 
-	 printf "Trouvé en %o iterations.\n", j-1;
+	 printf "Found in %o iterations.\n", j-1;
 
 	 return Ci;
 
@@ -126,8 +126,8 @@ function ComputeCiGuess(C, Cim1, Cu, Cv, a , guess, stop)
 	 
 
 	 if win eq [] then
-	    print "Pas de fenetre de raccourcissement pour ces codes";
-            return Ci;
+	    print "No shortening window for these codes";
+        return Ci;
 	 end if;
 
 	 index:=(#win) div 2 +1;
@@ -142,8 +142,8 @@ function ComputeCiGuess(C, Cim1, Cu, Cv, a , guess, stop)
 
 	 while Dimension(Ci) lt guess do
 	       if j eq stop then
-	       	  print "Echec";
-		  return Ci;
+	       	  print "FAILED";
+		  	  return Ci;
 	       end if;
 
 	       S:=RandomSubset(U, short);
@@ -157,7 +157,7 @@ function ComputeCiGuess(C, Cim1, Cu, Cv, a , guess, stop)
 	       j+:=1;
 	 end while;	 
 
-	 printf "Trouvé en %o iterations.\n", j-1;
+	 printf "Found in %o iterations.\n", j-1;
 
 	 return Ci;
 
@@ -196,17 +196,18 @@ function VarComputeCiGuess(C, Cim1, Cu, Cv, a ,b ,bp , guess, stop)
 
 	 if AsymDistTest(Cu, Cv, b)
 	    then short:=b;
-	 else print "Calcul complet de la fenetre de distingueur. Cela peut \^etre long...";
-           	 win:=DeterminAsymShoot(Cu, Cv, bp);
-	 	 if win eq [] then
-	 	      print "Pas de fenetre de raccourcissement pour ces codes";
-		      return Ci;
-	         end if;
+	 else
+		print "Computing the full distinguishing window. This may taks some time...";
+        win:=DeterminAsymShoot(Cu, Cv, bp);
+	 	if win eq [] then
+	 	   print "No shortening window for these codes";
+		   return Ci;
+	    end if;
 
 	    index:=(#win) div 2 +1;
 	    short:=win[index];
 	 
-            delete win;
+        delete win;
 	    delete index;
 	 end if;
 
@@ -216,8 +217,8 @@ function VarComputeCiGuess(C, Cim1, Cu, Cv, a ,b ,bp , guess, stop)
 	 while Dimension(Ci) lt guess do
 	       print Dimension(Ci);
 	       if j eq stop then
-	       	  print "Echec";
-		  return Ci;
+	       	  print "FAILED";
+		  	  return Ci;
 	       end if;
 
 	       S:=RandomSubset(U, short);
@@ -231,7 +232,7 @@ function VarComputeCiGuess(C, Cim1, Cu, Cv, a ,b ,bp , guess, stop)
 	       j+:=1;
 	 end while;	 
 
-	 printf "Trouvé en %o iterations.\n", j-1;
+	 printf "Found in %o iterations.\n", j-1;
 
 	 return Ci;
 
@@ -279,8 +280,8 @@ function PrescComputeCiGuess(C, Cim1, Cu, Cv, a ,b , guess, stop)
 	       	  then return Ci;
 	       end if;
 	       if j eq stop then
-	       	  print "Echec";
-		  return Ci;
+	       	  print "FAILED";
+		  	  return Ci;
 	       end if;
 
 	       S:=RandomSubset(U, b);
@@ -294,7 +295,7 @@ function PrescComputeCiGuess(C, Cim1, Cu, Cv, a ,b , guess, stop)
 	       j+:=1;
 	 end while;	 
 
-	 printf "Trouvé en %o iterations.\n", j-1;
+	 printf "Found in %o iterations.\n", j-1;
 
 	 return Ci;
 
@@ -334,7 +335,7 @@ end function;
 function MultiCompCi (C, a, i, stop);
 	 C1:=ExtShorten(C, {a});
 	 
-	 printf "C1 est de dimension %o.\n", Dimension(C1);
+	 printf "C1 has dimension %o.\n", Dimension(C1);
 	 L:=[LinearCode<BaseRing(C), Length(C) | 0>];
 	 Ci:=C1;
 	 for j:=2 to i do
@@ -342,28 +343,28 @@ function MultiCompCi (C, a, i, stop);
 
 
 	     if Cip eq LinearCode<BaseRing(C), Length(C) | 0> then
-		 	   print "Tentative de calcul plus fin.\n";
-		 	   if #L eq 1 then print "Pas de codes distinguables";
+		 	   print "Trying a finer computation.\n";
+		 	   if #L eq 1 then print "No distinguable codes";
 			   	  return 0;
 			   end if;
 			   
 			   for s:=2 to Floor((#L+1)/2) do		 		
-			   			   Di:=C1 meet Dual(&+L[1..s]);
-						   Doi:=C1 meet Dual(&+L[1..(#L+1-s)]);
-						   print Dimension(Ci), Dimension(Di), Dimension(Doi);
-						   printf "\n";
-						   Cip+:=ComputeCi(C, Ci, Di, Doi, a, stop);
+			   	   Di:=C1 meet Dual(&+L[1..s]);
+				   Doi:=C1 meet Dual(&+L[1..(#L+1-s)]);
+				   print Dimension(Ci), Dimension(Di), Dimension(Doi);
+				   printf "\n";
+				   Cip+:=ComputeCi(C, Ci, Di, Doi, a, stop);
 			   end for;
 	     end if;
 
 
-	     printf "C%o calcul\'e.\n", j;
-	     printf "C%o est de dimension %o.\n", j, Dimension(Cip);
+	     printf "C%o Computed.\n", j;
+	     printf "C%o has dimension %o.\n", j, Dimension(Cip);
 	     Di:=Dual(Ci);
 	     Dip:=Dual(Cip);
 	     U:=CodeComplement(Dip, Di);
 	     Ci := Cip;
-//           print U;
+//       print U;
 	     Append(~L, U);
 	 end for;
 	
@@ -387,7 +388,7 @@ function ComputeCij(C, Cim1, Cu, Cv, A , stop)
 	 U:={1..n};
 	 for a in A do
 	 	 Exclude(~U, a);
-         end for;
+     end for;
 
 
 	 // First compute a suitable shooting window
@@ -398,9 +399,8 @@ function ComputeCij(C, Cim1, Cu, Cv, A , stop)
 	 
 
 	 if win eq [] then
-	    print "Pas de fenetre de
-	    	  raccourcissement pour ces codes";
-            return Ci;
+	    print "No shortening window for these codes";
+        return Ci;
 	 end if;
 
 	 index:=(#win) div 2 +1;
@@ -422,8 +422,8 @@ function ComputeCij(C, Cim1, Cu, Cv, A , stop)
 
 	 while (test[t] ne test[t-4]) do
 	       if j eq stop then
-	       	  print "Echec";
-		  return LinearCode<BaseRing(C), n | 0>;
+	       	  print "FAILED";
+		      return LinearCode<BaseRing(C), n | 0>;
 	       end if;
 
 	       S:=RandomSubset(U, short);
@@ -441,7 +441,7 @@ function ComputeCij(C, Cim1, Cu, Cv, A , stop)
 	       j+:=1;
 	 end while;	 
 
-	 printf "Trouvé en %o iterations.\n", j-1;
+	 printf "Found in %o iterations.\n", j-1;
 
 	 return Ci;
 
