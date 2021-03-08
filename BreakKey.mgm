@@ -168,7 +168,7 @@ function BreakKey(C,r, stop)
 	end while;
 
 // Maintenant, on a de bons candidats
-   print "We have a pair candidate to construct a GRS";
+   print "We have a pair candidate to construct a GRS code.\n";
 
    U:=EquivComp2(T, fi, fj);
    Coeffts:=U[1];
@@ -305,7 +305,7 @@ function BreakKeyManual(C,C0, C1, r)
    	    return 0;
     end if;
 
-    print "We have a candidate pair to construct a GRS";
+    print "We have a candidate pair to construct a GRS code!\n";
     Coeffts:=V[1];
     M:=EquivMatrice(Coeffts, fi ,fj);
     assert LinearCode(BasisMatrix(Cpe) * M) subset SRS;
@@ -319,7 +319,7 @@ function BreakKeyManual(C,C0, C1, r)
 
 	GRS:=GRSCode(S,W, n - r*(q+1));
 	print "****************************";
-	print "Comparison of the computed code with the publlic key";
+	print "Comparison of the computed code with the public key";
 	if SubfieldSubcode(GRS,F) eq C then
 	    print "[SUCCESS]";
 	else
