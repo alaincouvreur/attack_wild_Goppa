@@ -57,7 +57,7 @@ E24:=ComputeCi(C, E12, E12, E12, 2, 1000);
 delete E1, E2, E3, E6, E12;
 
 C0:=D24;
-C1:=E24
+C1:=E24;
 
 assert Dimension(C0) eq GS[q+1][2];
 assert Dimension(C1) eq GS[q+1][2];
@@ -65,5 +65,4 @@ assert Dimension(C1) eq GS[q+1][2];
 print "Computation of the Filtrations done!\n";
 print "****************************************\n";
 
-T:=BreakKeyManual(C, C0, C1, r);
-print T;
+S, W, j:=BreakKeyManual(C, C0, C1, r);

@@ -65,5 +65,5 @@ assert Dimension(C1) eq GS[q+1][2];
 print "Computation of the Filtrations done!\n";
 print "****************************************\n";
 
-T:=BreakKeyManual(C, C0, C1, r);
-print T;
+S, W, jj := BreakKeyManual(C, C0, C1, r);
+

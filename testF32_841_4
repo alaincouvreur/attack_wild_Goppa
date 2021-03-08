@@ -160,9 +160,9 @@ else
 
 	GRS:=GRSCode(S,W, n - r*(q+1));
 	print "Comparision with the original public key.\n \n";
-	print SubfieldSubcode(GRS,F) eq C;
-
-	print "\n \n";
-	print S;
-	print W;
+	if SubfieldSubcode(GRS,F) eq C then
+	    print "[SUCCESS]";
+	else
+		print "[ATTACK FAILED]";
+	end if;
 end if;

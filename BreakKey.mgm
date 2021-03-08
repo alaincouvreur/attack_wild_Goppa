@@ -318,7 +318,14 @@ function BreakKeyManual(C,C0, C1, r)
 	W:=PermuteSeq(W1,s^(-1));
 
 	GRS:=GRSCode(S,W, n - r*(q+1));
-	assert SubfieldSubcode(GRS,F) eq C;
+	print "****************************";
+	print "Comparison of the computed code with the publlic key";
+	if SubfieldSubcode(GRS,F) eq C then
+	    print "[SUCCESS]";
+	else
+	    print "[ATTACK FAILED]";
+	end if;
+	print "****************************";
 
 	return S,W,jj-1;
 end function;
