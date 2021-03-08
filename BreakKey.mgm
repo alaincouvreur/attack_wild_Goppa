@@ -287,12 +287,12 @@ function BreakKeyManual(C,C0, C1, r)
 		   dimension: %o.\n\n", a;
 
 		if a gt 10 then 
-	   	   print "This candidate has a too large space of morphisms,
-	   		 we leave it aside.\n\n";
-	   	   t:=0;
+	        print "This candidate has a too large space of morphisms,
+	   		    we leave it aside.\n\n";
+	   	    t:=0;
 	    elif a gt 0 then		 
-	       V:=EquivComp2(T, fi, fj);
-	       t:=#V;
+	    	V:=EquivComp2(T, fi, fj);
+	       	t:=#V;
 		end if;
 
 		jj+:=1;
