@@ -283,7 +283,7 @@ function BreakKeyManual(C,C0, C1, r)
 		T:=EquivCompOpt(Cpe, SRS, fi, fj);
     	a:=Dimension(T);
 
-		printf "The space of morphism from our code to the SRS has
+		printf "The space of morphisms from our code to the SRS has
 		   dimension: %o.\n\n", a;
 
 		if a gt 10 then 
