@@ -19,3 +19,5 @@ scripts with name test*
 Example:
 Open magma:
 > load "testF29_781_5"
+
+The calculation may take a couple hours.
