@@ -236,7 +236,7 @@ function BreakKeyManual(C,C0, C1, r)
 
 // Maintenant on teste la paire.
    		d:=q^2 - r*(q+1);
-		printf "Try with pair candidat number: %o.\n", jj;
+		printf "Try with pair candidate number: %o.\n", jj;
 		print "\nComputing the minimal polynomials.";
 
 	
