@@ -51,7 +51,7 @@ function EquivComp(C, D, fi, fj)
 //		 print #P[1];
 
 		 M:=Matrix(m,mm, P);
-		 printf "Matrice a %o lignes et %o colonnes.\n", m, mm;
+		 printf "Matrix with %o rows and %o columns.\n", m, mm;
 		 if Rank(M) eq m then
 		    return VectorSpace(BaseRing(C),0);
 		 end if;
@@ -105,16 +105,16 @@ function EquivCompOpt(C, D, fi, fj)
 		 
 		 M0:=Matrix(mm+100,mm, P);
 		 m0:=Rank(M0);
-		 printf "Matrice a %o lignes, %o colonnes de rang %o.\n \n",NumberOfRows(M0), NumberOfColumns(M0), m0;
+		 printf "Matrix with %o rows, %o columns with rank %o.\n \n",NumberOfRows(M0), NumberOfColumns(M0), m0;
 		 if m0 gt mm-2 then
-		    print "Regle par loop rapide.\n \n";
+		    print "Solved thanks to a fast loop.\n \n";
 		    return VectorSpace(BaseRing(C),0);
 		 elif m0 eq mm-2 then
-		      print "Trouve avec resolution rapide.\n \n";
+		      print "Found thanks to a fast resolution.\n \n";
 		      return NullspaceOfTranspose(M0);
 		 end if;
 
-		 print "Non decele par boucle rapide.\n \n";
+		 print "Not found with a fast loop.\n \n";
 
 //-----------------------------------------------------
 
@@ -135,7 +135,7 @@ function EquivCompOpt(C, D, fi, fj)
 //		 print #P[1];
 
 		 M:=Matrix(m,mm, P);
-		 printf "Matrice a %o lignes et %o colonnes.\n", m, mm;
+		 printf "Matrix with %o rows et %o columns.\n", m, mm;
 		 
 		 return NullspaceOfTranspose(M);
 //		 return M;
